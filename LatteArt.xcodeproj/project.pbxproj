@@ -1,0 +1,476 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0123FB21BE965BD13F5821E4 /* WaterPourTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080297C4EE048543E047E555 /* WaterPourTracker.swift */; };
+		018707404E79CD207AEB9213 /* CupPose.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9052A2E125B03C0ECF10DAD /* CupPose.swift */; };
+		13B94C37799481F5922AD39B /* Phase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8EB51C180F236D789D9CBFF /* Phase.swift */; };
+		1DD8249DAAB9B06D819ED107 /* PatternLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1471571D9BF1E95B67B299 /* PatternLibrary.swift */; };
+		2595D7A4811BDFF27E59B212 /* LatteArtApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F5B3C927A3B0C6D78C5380 /* LatteArtApp.swift */; };
+		27484408B388D4373CE6D217 /* GuidanceOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = D296FFD6B143B828985A8B75 /* GuidanceOverlay.swift */; };
+		2810C92B0499DFE0B80D00E4 /* Fluid.metal in Sources */ = {isa = PBXBuildFile; fileRef = 4123ACD6561ADB19C9B31538 /* Fluid.metal */; };
+		29B497047892B4C5E556D8B1 /* PourView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F9205609FB2D3240B4D3182 /* PourView.swift */; };
+		36B6DB15C0D640A538FF1EEF /* LevelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 699FEAF82B28EE704F49B4E7 /* LevelModel.swift */; };
+		3960597C3C8D978CB7A662F9 /* PerceptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 360D298BDF1E04ADEF2CCBCF /* PerceptionManager.swift */; };
+		3B8ED92F7F27A0F6E2AD9930 /* CameraBlitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C756515CDE4892BD773C747 /* CameraBlitter.swift */; };
+		66B2F2B19B7FD191798BF1C3 /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38CD279A3F8F619959B5FFD5 /* SetupView.swift */; };
+		67FA21753FF9E40CB93AEBEE /* PourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DB419D907F25F6F554E04A9 /* PourSource.swift */; };
+		6E8B766BDEAE945ED98DCD06 /* FluidSimulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7C6EBB152DE8E8CF31652E3 /* FluidSimulation.swift */; };
+		8CA115DD516E1BA6B18C3E33 /* ResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7987099DA6FB3C03532E3135 /* ResultView.swift */; };
+		8D4E00FAA4AB877F8E435998 /* AutoPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCFDFAED956ED0AE1FBEEAA2 /* AutoPourSource.swift */; };
+		A4400DD56E9DA32C940024E5 /* CupSpace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B23BF3A5D532A6BDDA167A0 /* CupSpace.swift */; };
+		A91AE8C98C800DE3AAABE3E9 /* CupDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854C26E417210B4E4C2A3A79 /* CupDetector.swift */; };
+		AF08C6BDE8AF67CFD191C255 /* MetalContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ABC3041A221CF0FFD97E5D5 /* MetalContext.swift */; };
+		B508B98DF5265CA022F42DAE /* SimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB98BE1931BF295765432459 /* SimulationController.swift */; };
+		BC18BCBA7007CBF1F5BB70F5 /* CameraFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C506E3BC6FE4D52619856B2 /* CameraFeed.swift */; };
+		C712DAD4F402F278F5B0DE16 /* AppFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCAA7DAFEC1AE0645D07E29 /* AppFlowView.swift */; };
+		C8ADB4D7AD03E5B174F42C87 /* AppFlowModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F70821BA4D4DE227843CD0 /* AppFlowModel.swift */; };
+		CDDFC1FE5EA6CA14AABD1D36 /* PatternSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A834E710356D0839F72831B /* PatternSelectView.swift */; };
+		D368987D3E0AF555DF111E1B /* TouchPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B38FBC2A86D50CBA531B239 /* TouchPourSource.swift */; };
+		DDA4D6DFB7F4EF2F27E4C687 /* PourSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE53C5B4DD814D4F28B9D48B /* PourSample.swift */; };
+		E2007BA3244322D9D7FB900D /* FluidBlitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AA9126E42B50B4A84AC187D /* FluidBlitter.swift */; };
+		EC8201A43B21BA264CED8E73 /* MetalFluidView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2DD417161DFFF67384BA051 /* MetalFluidView.swift */; };
+		EEA70AB4B5FFD5EF75C81552 /* PourStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72705C65803CCCF7B4636211 /* PourStep.swift */; };
+		EEACD92D68FC188643494DF9 /* PatternGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E6724732E2B4BC3C1A2929E /* PatternGuide.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		080297C4EE048543E047E555 /* WaterPourTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaterPourTracker.swift; sourceTree = "<group>"; };
+		0E6724732E2B4BC3C1A2929E /* PatternGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternGuide.swift; sourceTree = "<group>"; };
+		360D298BDF1E04ADEF2CCBCF /* PerceptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerceptionManager.swift; sourceTree = "<group>"; };
+		38CD279A3F8F619959B5FFD5 /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupView.swift; sourceTree = "<group>"; };
+		4123ACD6561ADB19C9B31538 /* Fluid.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Fluid.metal; sourceTree = "<group>"; };
+		4A834E710356D0839F72831B /* PatternSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternSelectView.swift; sourceTree = "<group>"; };
+		4AA9126E42B50B4A84AC187D /* FluidBlitter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FluidBlitter.swift; sourceTree = "<group>"; };
+		4B23BF3A5D532A6BDDA167A0 /* CupSpace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupSpace.swift; sourceTree = "<group>"; };
+		4DB419D907F25F6F554E04A9 /* PourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourSource.swift; sourceTree = "<group>"; };
+		5ABC3041A221CF0FFD97E5D5 /* MetalContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalContext.swift; sourceTree = "<group>"; };
+		5B38FBC2A86D50CBA531B239 /* TouchPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchPourSource.swift; sourceTree = "<group>"; };
+		5E1471571D9BF1E95B67B299 /* PatternLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternLibrary.swift; sourceTree = "<group>"; };
+		66F70821BA4D4DE227843CD0 /* AppFlowModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowModel.swift; sourceTree = "<group>"; };
+		699FEAF82B28EE704F49B4E7 /* LevelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelModel.swift; sourceTree = "<group>"; };
+		72705C65803CCCF7B4636211 /* PourStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourStep.swift; sourceTree = "<group>"; };
+		7987099DA6FB3C03532E3135 /* ResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultView.swift; sourceTree = "<group>"; };
+		7BCAA7DAFEC1AE0645D07E29 /* AppFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowView.swift; sourceTree = "<group>"; };
+		854C26E417210B4E4C2A3A79 /* CupDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupDetector.swift; sourceTree = "<group>"; };
+		86F5B3C927A3B0C6D78C5380 /* LatteArtApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LatteArtApp.swift; sourceTree = "<group>"; };
+		8C756515CDE4892BD773C747 /* CameraBlitter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraBlitter.swift; sourceTree = "<group>"; };
+		9838B2BCDB97181740403476 /* LatteArt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LatteArt.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9C506E3BC6FE4D52619856B2 /* CameraFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraFeed.swift; sourceTree = "<group>"; };
+		9F9205609FB2D3240B4D3182 /* PourView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourView.swift; sourceTree = "<group>"; };
+		B2DD417161DFFF67384BA051 /* MetalFluidView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalFluidView.swift; sourceTree = "<group>"; };
+		B8EB51C180F236D789D9CBFF /* Phase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phase.swift; sourceTree = "<group>"; };
+		C9052A2E125B03C0ECF10DAD /* CupPose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupPose.swift; sourceTree = "<group>"; };
+		CCFDFAED956ED0AE1FBEEAA2 /* AutoPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoPourSource.swift; sourceTree = "<group>"; };
+		D296FFD6B143B828985A8B75 /* GuidanceOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuidanceOverlay.swift; sourceTree = "<group>"; };
+		DB98BE1931BF295765432459 /* SimulationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationController.swift; sourceTree = "<group>"; };
+		DE53C5B4DD814D4F28B9D48B /* PourSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourSample.swift; sourceTree = "<group>"; };
+		F342CF367C5890C6B5D7BE01 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		F7C6EBB152DE8E8CF31652E3 /* FluidSimulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FluidSimulation.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		4244E7F9A06FC525643E9DFD = {
+			isa = PBXGroup;
+			children = (
+				5415EC95E0C6F7FE58AB391A /* LatteArt */,
+				F4CE9390596555841E0B4008 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		5415EC95E0C6F7FE58AB391A /* LatteArt */ = {
+			isa = PBXGroup;
+			children = (
+				F342CF367C5890C6B5D7BE01 /* Info.plist */,
+				F7232F19BDFF4534302E9EF2 /* App */,
+				B08EFEC6BC618F02DFF997EC /* Core */,
+				C0203EA3CB9380D4F75DC862 /* Patterns */,
+				F32F65A9C18D11A53023266D /* Perception */,
+				8BDDC60DF73594A351A5C750 /* Rendering */,
+				BE4DFE4E57A23FE192255658 /* Simulation */,
+				7F34996045110FFE9438BE30 /* UI */,
+			);
+			path = LatteArt;
+			sourceTree = "<group>";
+		};
+		7F34996045110FFE9438BE30 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				7BCAA7DAFEC1AE0645D07E29 /* AppFlowView.swift */,
+				D296FFD6B143B828985A8B75 /* GuidanceOverlay.swift */,
+				B2DD417161DFFF67384BA051 /* MetalFluidView.swift */,
+				4A834E710356D0839F72831B /* PatternSelectView.swift */,
+				9F9205609FB2D3240B4D3182 /* PourView.swift */,
+				7987099DA6FB3C03532E3135 /* ResultView.swift */,
+				38CD279A3F8F619959B5FFD5 /* SetupView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		8BDDC60DF73594A351A5C750 /* Rendering */ = {
+			isa = PBXGroup;
+			children = (
+				8C756515CDE4892BD773C747 /* CameraBlitter.swift */,
+				4AA9126E42B50B4A84AC187D /* FluidBlitter.swift */,
+				5ABC3041A221CF0FFD97E5D5 /* MetalContext.swift */,
+			);
+			path = Rendering;
+			sourceTree = "<group>";
+		};
+		B08EFEC6BC618F02DFF997EC /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				C9052A2E125B03C0ECF10DAD /* CupPose.swift */,
+				4B23BF3A5D532A6BDDA167A0 /* CupSpace.swift */,
+				DE53C5B4DD814D4F28B9D48B /* PourSample.swift */,
+				4DB419D907F25F6F554E04A9 /* PourSource.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		BE4DFE4E57A23FE192255658 /* Simulation */ = {
+			isa = PBXGroup;
+			children = (
+				F7C6EBB152DE8E8CF31652E3 /* FluidSimulation.swift */,
+				699FEAF82B28EE704F49B4E7 /* LevelModel.swift */,
+				F9FB92EB31149EE535E885DC /* Shaders */,
+			);
+			path = Simulation;
+			sourceTree = "<group>";
+		};
+		C0203EA3CB9380D4F75DC862 /* Patterns */ = {
+			isa = PBXGroup;
+			children = (
+				0E6724732E2B4BC3C1A2929E /* PatternGuide.swift */,
+				5E1471571D9BF1E95B67B299 /* PatternLibrary.swift */,
+				72705C65803CCCF7B4636211 /* PourStep.swift */,
+			);
+			path = Patterns;
+			sourceTree = "<group>";
+		};
+		F32F65A9C18D11A53023266D /* Perception */ = {
+			isa = PBXGroup;
+			children = (
+				CCFDFAED956ED0AE1FBEEAA2 /* AutoPourSource.swift */,
+				9C506E3BC6FE4D52619856B2 /* CameraFeed.swift */,
+				854C26E417210B4E4C2A3A79 /* CupDetector.swift */,
+				360D298BDF1E04ADEF2CCBCF /* PerceptionManager.swift */,
+				5B38FBC2A86D50CBA531B239 /* TouchPourSource.swift */,
+				080297C4EE048543E047E555 /* WaterPourTracker.swift */,
+			);
+			path = Perception;
+			sourceTree = "<group>";
+		};
+		F4CE9390596555841E0B4008 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				9838B2BCDB97181740403476 /* LatteArt.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F7232F19BDFF4534302E9EF2 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				66F70821BA4D4DE227843CD0 /* AppFlowModel.swift */,
+				86F5B3C927A3B0C6D78C5380 /* LatteArtApp.swift */,
+				B8EB51C180F236D789D9CBFF /* Phase.swift */,
+				DB98BE1931BF295765432459 /* SimulationController.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		F9FB92EB31149EE535E885DC /* Shaders */ = {
+			isa = PBXGroup;
+			children = (
+				4123ACD6561ADB19C9B31538 /* Fluid.metal */,
+			);
+			path = Shaders;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		611CE05FBC3F3ECA03692B7A /* LatteArt */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 385FD628E768769173D7BA0E /* Build configuration list for PBXNativeTarget "LatteArt" */;
+			buildPhases = (
+				15948703886E23AE64F37998 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LatteArt;
+			packageProductDependencies = (
+			);
+			productName = LatteArt;
+			productReference = 9838B2BCDB97181740403476 /* LatteArt.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		26E2CCAA68D39D484E039B0D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+			};
+			buildConfigurationList = 5BD9B2B92D643F46D401D7C3 /* Build configuration list for PBXProject "LatteArt" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 4244E7F9A06FC525643E9DFD;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F4CE9390596555841E0B4008 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				611CE05FBC3F3ECA03692B7A /* LatteArt */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		15948703886E23AE64F37998 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C8ADB4D7AD03E5B174F42C87 /* AppFlowModel.swift in Sources */,
+				C712DAD4F402F278F5B0DE16 /* AppFlowView.swift in Sources */,
+				8D4E00FAA4AB877F8E435998 /* AutoPourSource.swift in Sources */,
+				3B8ED92F7F27A0F6E2AD9930 /* CameraBlitter.swift in Sources */,
+				BC18BCBA7007CBF1F5BB70F5 /* CameraFeed.swift in Sources */,
+				A91AE8C98C800DE3AAABE3E9 /* CupDetector.swift in Sources */,
+				018707404E79CD207AEB9213 /* CupPose.swift in Sources */,
+				A4400DD56E9DA32C940024E5 /* CupSpace.swift in Sources */,
+				2810C92B0499DFE0B80D00E4 /* Fluid.metal in Sources */,
+				E2007BA3244322D9D7FB900D /* FluidBlitter.swift in Sources */,
+				6E8B766BDEAE945ED98DCD06 /* FluidSimulation.swift in Sources */,
+				27484408B388D4373CE6D217 /* GuidanceOverlay.swift in Sources */,
+				2595D7A4811BDFF27E59B212 /* LatteArtApp.swift in Sources */,
+				36B6DB15C0D640A538FF1EEF /* LevelModel.swift in Sources */,
+				AF08C6BDE8AF67CFD191C255 /* MetalContext.swift in Sources */,
+				EC8201A43B21BA264CED8E73 /* MetalFluidView.swift in Sources */,
+				EEACD92D68FC188643494DF9 /* PatternGuide.swift in Sources */,
+				1DD8249DAAB9B06D819ED107 /* PatternLibrary.swift in Sources */,
+				CDDFC1FE5EA6CA14AABD1D36 /* PatternSelectView.swift in Sources */,
+				3960597C3C8D978CB7A662F9 /* PerceptionManager.swift in Sources */,
+				13B94C37799481F5922AD39B /* Phase.swift in Sources */,
+				DDA4D6DFB7F4EF2F27E4C687 /* PourSample.swift in Sources */,
+				67FA21753FF9E40CB93AEBEE /* PourSource.swift in Sources */,
+				EEA70AB4B5FFD5EF75C81552 /* PourStep.swift in Sources */,
+				29B497047892B4C5E556D8B1 /* PourView.swift in Sources */,
+				8CA115DD516E1BA6B18C3E33 /* ResultView.swift in Sources */,
+				66B2F2B19B7FD191798BF1C3 /* SetupView.swift in Sources */,
+				B508B98DF5265CA022F42DAE /* SimulationController.swift in Sources */,
+				D368987D3E0AF555DF111E1B /* TouchPourSource.swift in Sources */,
+				0123FB21BE965BD13F5821E4 /* WaterPourTracker.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		87FB478507C62C87E0CCF237 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		8F4C424184C4B484097D3ED8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = L6599J28A4;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LatteArt/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.signvrse.latteart;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		8FC752D94B39178737462359 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		B54A5CE747A350239233FDAE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = L6599J28A4;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LatteArt/Info.plist;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.signvrse.latteart;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		385FD628E768769173D7BA0E /* Build configuration list for PBXNativeTarget "LatteArt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8F4C424184C4B484097D3ED8 /* Debug */,
+				B54A5CE747A350239233FDAE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5BD9B2B92D643F46D401D7C3 /* Build configuration list for PBXProject "LatteArt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8FC752D94B39178737462359 /* Debug */,
+				87FB478507C62C87E0CCF237 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 26E2CCAA68D39D484E039B0D /* Project object */;
+}

@@ -1,0 +1,39 @@
+name: LatteArt
+options:
+  bundleIdPrefix: com.signvrse
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_PREVIEWS: "YES"
+
+targets:
+  LatteArt:
+    type: application
+    platform: iOS
+    sources:
+      - path: LatteArt
+    info:
+      path: LatteArt/Info.plist
+      properties:
+        CFBundleDisplayName: Latte Art
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSCameraUsageDescription: >-
+          Latte Art uses the camera to watch your cup and track how you pour,
+          so it can simulate and coach your latte art in real time.
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.signvrse.latteart
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: "YES"
+        GENERATE_INFOPLIST_FILE: "NO"
