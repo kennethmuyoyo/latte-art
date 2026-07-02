@@ -1,0 +1,18 @@
+# macOS
+.DS_Store
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+*.xcscmblueprint
+*.xccheckout
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Generated (xcodegen regenerates the project from project.yml)
+# Comment the next line out if you prefer to commit the .xcodeproj.
+# LatteArt.xcodeproj/
