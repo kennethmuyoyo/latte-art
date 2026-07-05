@@ -15,8 +15,11 @@ An iOS app that utilizes MetalKit, Vision, CoreGraphics, and ARKit to calculate 
 
 ### Present Your Team
 
-[ Insert team members and roles here ]
-
+Adit - UX/UI and Domain Knowledge
+Charisa - UX/UX design
+Samuel - Simulation Layer
+Elliezer - Presentation LAyer
+Ken - Sensor Layer
 ---
 
 ## Starting Assumption
