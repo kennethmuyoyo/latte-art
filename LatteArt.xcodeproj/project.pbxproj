@@ -7,70 +7,64 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		018707404E79CD207AEB9213 /* CupPose.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9052A2E125B03C0ECF10DAD /* CupPose.swift */; };
-		13B94C37799481F5922AD39B /* Phase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8EB51C180F236D789D9CBFF /* Phase.swift */; };
-		1DD8249DAAB9B06D819ED107 /* PatternLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1471571D9BF1E95B67B299 /* PatternLibrary.swift */; };
-		1F14575E9752631AFF1BBE99 /* ARFluidView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F46C9F056E126EE37D462F0 /* ARFluidView.swift */; };
-		2595D7A4811BDFF27E59B212 /* LatteArtApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F5B3C927A3B0C6D78C5380 /* LatteArtApp.swift */; };
-		27484408B388D4373CE6D217 /* GuidanceOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = D296FFD6B143B828985A8B75 /* GuidanceOverlay.swift */; };
-		2810C92B0499DFE0B80D00E4 /* Fluid.metal in Sources */ = {isa = PBXBuildFile; fileRef = 4123ACD6561ADB19C9B31538 /* Fluid.metal */; };
-		29B497047892B4C5E556D8B1 /* PourView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F9205609FB2D3240B4D3182 /* PourView.swift */; };
-		36B6DB15C0D640A538FF1EEF /* LevelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 699FEAF82B28EE704F49B4E7 /* LevelModel.swift */; };
-		66B2F2B19B7FD191798BF1C3 /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38CD279A3F8F619959B5FFD5 /* SetupView.swift */; };
-		67FA21753FF9E40CB93AEBEE /* PourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DB419D907F25F6F554E04A9 /* PourSource.swift */; };
-		6E8B766BDEAE945ED98DCD06 /* FluidSimulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7C6EBB152DE8E8CF31652E3 /* FluidSimulation.swift */; };
-		8CA115DD516E1BA6B18C3E33 /* ResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7987099DA6FB3C03532E3135 /* ResultView.swift */; };
-		8D4E00FAA4AB877F8E435998 /* AutoPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCFDFAED956ED0AE1FBEEAA2 /* AutoPourSource.swift */; };
-		A4400DD56E9DA32C940024E5 /* CupSpace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B23BF3A5D532A6BDDA167A0 /* CupSpace.swift */; };
-		AF08C6BDE8AF67CFD191C255 /* MetalContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ABC3041A221CF0FFD97E5D5 /* MetalContext.swift */; };
-		AF443E02D13C941D9CBA6754 /* DotRegistrationOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67402940A8018E79173A7CA7 /* DotRegistrationOverlay.swift */; };
-		B508B98DF5265CA022F42DAE /* SimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB98BE1931BF295765432459 /* SimulationController.swift */; };
-		B5696E45387DC326238C2FFC /* SurfaceCalibrationOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79BDCA027993072D14FF0357 /* SurfaceCalibrationOverlay.swift */; };
-		C712DAD4F402F278F5B0DE16 /* AppFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCAA7DAFEC1AE0645D07E29 /* AppFlowView.swift */; };
-		C8ADB4D7AD03E5B174F42C87 /* AppFlowModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F70821BA4D4DE227843CD0 /* AppFlowModel.swift */; };
-		CDDFC1FE5EA6CA14AABD1D36 /* PatternSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A834E710356D0839F72831B /* PatternSelectView.swift */; };
-		D368987D3E0AF555DF111E1B /* TouchPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B38FBC2A86D50CBA531B239 /* TouchPourSource.swift */; };
-		DDA4D6DFB7F4EF2F27E4C687 /* PourSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE53C5B4DD814D4F28B9D48B /* PourSample.swift */; };
-		E2007BA3244322D9D7FB900D /* FluidBlitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AA9126E42B50B4A84AC187D /* FluidBlitter.swift */; };
-		EC8201A43B21BA264CED8E73 /* MetalFluidView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2DD417161DFFF67384BA051 /* MetalFluidView.swift */; };
-		EEA70AB4B5FFD5EF75C81552 /* PourStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72705C65803CCCF7B4636211 /* PourStep.swift */; };
-		EEACD92D68FC188643494DF9 /* PatternGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E6724732E2B4BC3C1A2929E /* PatternGuide.swift */; };
+		0DED854D1111023DCD238E07 /* Simulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4565DF4FB938A635EFFBE95B /* Simulation.swift */; };
+		104124D834860B2BE50B476F /* AprilTagTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFCBB9B8F001EA627BC95663 /* AprilTagTracker.swift */; };
+		1F64563BF90338E258BC6F15 /* TouchPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB9F8841417BDD1BFB5FC5BD /* TouchPourSource.swift */; };
+		3D7A132C363EF978D6F11251 /* SwiftAprilTag in Frameworks */ = {isa = PBXBuildFile; productRef = 14D600C4B18F2C4F11E4B221 /* SwiftAprilTag */; };
+		59F562EEA9244D9AD5AA7E62 /* PourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8028DBAF1675F96CBA7A3F57 /* PourSource.swift */; };
+		5DDCDF100D65B266D0C2DB31 /* AprilTagPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957D4D9E9A9E5DF9DE08C16C /* AprilTagPourSource.swift */; };
+		94F05AFE2A7F914BA7BCE86C /* PourSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C9554692626962B308BBAA8 /* PourSample.swift */; };
+		9E7BD0EE162D508F90D0A989 /* AutoPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB71FF277E0EC685F1CEA8C /* AutoPourSource.swift */; };
+		AF9FCE3EC606D5A4100CCEEF /* CupGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C291F27E3B9B0B80AA8953 /* CupGeometry.swift */; };
+		D2BB56BF4C76F28B49CD69D0 /* LatteArtApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0478823C1B679BE388CE618 /* LatteArtApp.swift */; };
+		ED4FBD89F718E5B1D7F6F5F2 /* CupSpace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10BBBCB6BFD6F38F85206525 /* CupSpace.swift */; };
+		F7512B110534827A1A8DA2FA /* CupPose.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6F5F7158BDD961611FEC382 /* CupPose.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0E6724732E2B4BC3C1A2929E /* PatternGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternGuide.swift; sourceTree = "<group>"; };
-		38CD279A3F8F619959B5FFD5 /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupView.swift; sourceTree = "<group>"; };
-		4123ACD6561ADB19C9B31538 /* Fluid.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Fluid.metal; sourceTree = "<group>"; };
-		4A834E710356D0839F72831B /* PatternSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternSelectView.swift; sourceTree = "<group>"; };
-		4AA9126E42B50B4A84AC187D /* FluidBlitter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FluidBlitter.swift; sourceTree = "<group>"; };
-		4B23BF3A5D532A6BDDA167A0 /* CupSpace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupSpace.swift; sourceTree = "<group>"; };
-		4DB419D907F25F6F554E04A9 /* PourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourSource.swift; sourceTree = "<group>"; };
-		5ABC3041A221CF0FFD97E5D5 /* MetalContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalContext.swift; sourceTree = "<group>"; };
-		5B38FBC2A86D50CBA531B239 /* TouchPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchPourSource.swift; sourceTree = "<group>"; };
-		5E1471571D9BF1E95B67B299 /* PatternLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternLibrary.swift; sourceTree = "<group>"; };
-		66F70821BA4D4DE227843CD0 /* AppFlowModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowModel.swift; sourceTree = "<group>"; };
-		67402940A8018E79173A7CA7 /* DotRegistrationOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DotRegistrationOverlay.swift; sourceTree = "<group>"; };
-		699FEAF82B28EE704F49B4E7 /* LevelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelModel.swift; sourceTree = "<group>"; };
-		6F46C9F056E126EE37D462F0 /* ARFluidView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARFluidView.swift; sourceTree = "<group>"; };
-		72705C65803CCCF7B4636211 /* PourStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourStep.swift; sourceTree = "<group>"; };
-		7987099DA6FB3C03532E3135 /* ResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultView.swift; sourceTree = "<group>"; };
-		79BDCA027993072D14FF0357 /* SurfaceCalibrationOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurfaceCalibrationOverlay.swift; sourceTree = "<group>"; };
-		7BCAA7DAFEC1AE0645D07E29 /* AppFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowView.swift; sourceTree = "<group>"; };
-		86F5B3C927A3B0C6D78C5380 /* LatteArtApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LatteArtApp.swift; sourceTree = "<group>"; };
-		9838B2BCDB97181740403476 /* LatteArt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LatteArt.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		9F9205609FB2D3240B4D3182 /* PourView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourView.swift; sourceTree = "<group>"; };
-		B2DD417161DFFF67384BA051 /* MetalFluidView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalFluidView.swift; sourceTree = "<group>"; };
-		B8EB51C180F236D789D9CBFF /* Phase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phase.swift; sourceTree = "<group>"; };
-		C9052A2E125B03C0ECF10DAD /* CupPose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupPose.swift; sourceTree = "<group>"; };
-		CCFDFAED956ED0AE1FBEEAA2 /* AutoPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoPourSource.swift; sourceTree = "<group>"; };
-		D296FFD6B143B828985A8B75 /* GuidanceOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuidanceOverlay.swift; sourceTree = "<group>"; };
-		DB98BE1931BF295765432459 /* SimulationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationController.swift; sourceTree = "<group>"; };
-		DE53C5B4DD814D4F28B9D48B /* PourSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourSample.swift; sourceTree = "<group>"; };
+		10BBBCB6BFD6F38F85206525 /* CupSpace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupSpace.swift; sourceTree = "<group>"; };
+		2AB71FF277E0EC685F1CEA8C /* AutoPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoPourSource.swift; sourceTree = "<group>"; };
+		3C9554692626962B308BBAA8 /* PourSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourSample.swift; sourceTree = "<group>"; };
+		4565DF4FB938A635EFFBE95B /* Simulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulation.swift; sourceTree = "<group>"; };
+		8028DBAF1675F96CBA7A3F57 /* PourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourSource.swift; sourceTree = "<group>"; };
+		957D4D9E9A9E5DF9DE08C16C /* AprilTagPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AprilTagPourSource.swift; sourceTree = "<group>"; };
+		9838B2BCDB97181740403476 /* LatteArt.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LatteArt.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		CFCBB9B8F001EA627BC95663 /* AprilTagTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AprilTagTracker.swift; sourceTree = "<group>"; };
+		D0478823C1B679BE388CE618 /* LatteArtApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LatteArtApp.swift; sourceTree = "<group>"; };
+		D6F5F7158BDD961611FEC382 /* CupPose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupPose.swift; sourceTree = "<group>"; };
+		D7C291F27E3B9B0B80AA8953 /* CupGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupGeometry.swift; sourceTree = "<group>"; };
+		DB9F8841417BDD1BFB5FC5BD /* TouchPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchPourSource.swift; sourceTree = "<group>"; };
 		F342CF367C5890C6B5D7BE01 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		F7C6EBB152DE8E8CF31652E3 /* FluidSimulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FluidSimulation.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFrameworksBuildPhase section */
+		5B84D190CB9681EA48FCA70A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3D7A132C363EF978D6F11251 /* SwiftAprilTag in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
 /* Begin PBXGroup section */
+		41084BFB585BE5AF23C7D6C6 /* Sensor */ = {
+			isa = PBXGroup;
+			children = (
+				957D4D9E9A9E5DF9DE08C16C /* AprilTagPourSource.swift */,
+				CFCBB9B8F001EA627BC95663 /* AprilTagTracker.swift */,
+				2AB71FF277E0EC685F1CEA8C /* AutoPourSource.swift */,
+				D7C291F27E3B9B0B80AA8953 /* CupGeometry.swift */,
+				D6F5F7158BDD961611FEC382 /* CupPose.swift */,
+				10BBBCB6BFD6F38F85206525 /* CupSpace.swift */,
+				3C9554692626962B308BBAA8 /* PourSample.swift */,
+				8028DBAF1675F96CBA7A3F57 /* PourSource.swift */,
+				DB9F8841417BDD1BFB5FC5BD /* TouchPourSource.swift */,
+			);
+			path = Sensor;
+			sourceTree = "<group>";
+		};
 		4244E7F9A06FC525643E9DFD = {
 			isa = PBXGroup;
 			children = (
@@ -83,81 +77,27 @@
 			isa = PBXGroup;
 			children = (
 				F342CF367C5890C6B5D7BE01 /* Info.plist */,
-				F7232F19BDFF4534302E9EF2 /* App */,
-				B08EFEC6BC618F02DFF997EC /* Core */,
-				C0203EA3CB9380D4F75DC862 /* Patterns */,
-				F32F65A9C18D11A53023266D /* Perception */,
-				8BDDC60DF73594A351A5C750 /* Rendering */,
+				5AAF5CD0D31BAF1F724E52BC /* Presentation */,
+				41084BFB585BE5AF23C7D6C6 /* Sensor */,
 				BE4DFE4E57A23FE192255658 /* Simulation */,
-				7F34996045110FFE9438BE30 /* UI */,
 			);
 			path = LatteArt;
 			sourceTree = "<group>";
 		};
-		7F34996045110FFE9438BE30 /* UI */ = {
+		5AAF5CD0D31BAF1F724E52BC /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
-				7BCAA7DAFEC1AE0645D07E29 /* AppFlowView.swift */,
-				6F46C9F056E126EE37D462F0 /* ARFluidView.swift */,
-				67402940A8018E79173A7CA7 /* DotRegistrationOverlay.swift */,
-				D296FFD6B143B828985A8B75 /* GuidanceOverlay.swift */,
-				B2DD417161DFFF67384BA051 /* MetalFluidView.swift */,
-				4A834E710356D0839F72831B /* PatternSelectView.swift */,
-				9F9205609FB2D3240B4D3182 /* PourView.swift */,
-				7987099DA6FB3C03532E3135 /* ResultView.swift */,
-				38CD279A3F8F619959B5FFD5 /* SetupView.swift */,
-				79BDCA027993072D14FF0357 /* SurfaceCalibrationOverlay.swift */,
+				D0478823C1B679BE388CE618 /* LatteArtApp.swift */,
 			);
-			path = UI;
-			sourceTree = "<group>";
-		};
-		8BDDC60DF73594A351A5C750 /* Rendering */ = {
-			isa = PBXGroup;
-			children = (
-				4AA9126E42B50B4A84AC187D /* FluidBlitter.swift */,
-				5ABC3041A221CF0FFD97E5D5 /* MetalContext.swift */,
-			);
-			path = Rendering;
-			sourceTree = "<group>";
-		};
-		B08EFEC6BC618F02DFF997EC /* Core */ = {
-			isa = PBXGroup;
-			children = (
-				C9052A2E125B03C0ECF10DAD /* CupPose.swift */,
-				4B23BF3A5D532A6BDDA167A0 /* CupSpace.swift */,
-				DE53C5B4DD814D4F28B9D48B /* PourSample.swift */,
-				4DB419D907F25F6F554E04A9 /* PourSource.swift */,
-			);
-			path = Core;
+			path = Presentation;
 			sourceTree = "<group>";
 		};
 		BE4DFE4E57A23FE192255658 /* Simulation */ = {
 			isa = PBXGroup;
 			children = (
-				F7C6EBB152DE8E8CF31652E3 /* FluidSimulation.swift */,
-				699FEAF82B28EE704F49B4E7 /* LevelModel.swift */,
-				F9FB92EB31149EE535E885DC /* Shaders */,
+				4565DF4FB938A635EFFBE95B /* Simulation.swift */,
 			);
 			path = Simulation;
-			sourceTree = "<group>";
-		};
-		C0203EA3CB9380D4F75DC862 /* Patterns */ = {
-			isa = PBXGroup;
-			children = (
-				0E6724732E2B4BC3C1A2929E /* PatternGuide.swift */,
-				5E1471571D9BF1E95B67B299 /* PatternLibrary.swift */,
-				72705C65803CCCF7B4636211 /* PourStep.swift */,
-			);
-			path = Patterns;
-			sourceTree = "<group>";
-		};
-		F32F65A9C18D11A53023266D /* Perception */ = {
-			isa = PBXGroup;
-			children = (
-				CCFDFAED956ED0AE1FBEEAA2 /* AutoPourSource.swift */,
-				5B38FBC2A86D50CBA531B239 /* TouchPourSource.swift */,
-			);
-			path = Perception;
 			sourceTree = "<group>";
 		};
 		F4CE9390596555841E0B4008 /* Products */ = {
@@ -168,25 +108,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		F7232F19BDFF4534302E9EF2 /* App */ = {
-			isa = PBXGroup;
-			children = (
-				66F70821BA4D4DE227843CD0 /* AppFlowModel.swift */,
-				86F5B3C927A3B0C6D78C5380 /* LatteArtApp.swift */,
-				B8EB51C180F236D789D9CBFF /* Phase.swift */,
-				DB98BE1931BF295765432459 /* SimulationController.swift */,
-			);
-			path = App;
-			sourceTree = "<group>";
-		};
-		F9FB92EB31149EE535E885DC /* Shaders */ = {
-			isa = PBXGroup;
-			children = (
-				4123ACD6561ADB19C9B31538 /* Fluid.metal */,
-			);
-			path = Shaders;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -195,6 +116,7 @@
 			buildConfigurationList = 385FD628E768769173D7BA0E /* Build configuration list for PBXNativeTarget "LatteArt" */;
 			buildPhases = (
 				15948703886E23AE64F37998 /* Sources */,
+				5B84D190CB9681EA48FCA70A /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -202,6 +124,7 @@
 			);
 			name = LatteArt;
 			packageProductDependencies = (
+				14D600C4B18F2C4F11E4B221 /* SwiftAprilTag */,
 			);
 			productName = LatteArt;
 			productReference = 9838B2BCDB97181740403476 /* LatteArt.app */;
@@ -215,6 +138,11 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					611CE05FBC3F3ECA03692B7A = {
+						DevelopmentTeam = "";
+					};
+				};
 			};
 			buildConfigurationList = 5BD9B2B92D643F46D401D7C3 /* Build configuration list for PBXProject "LatteArt" */;
 			developmentRegion = en;
@@ -225,6 +153,9 @@
 			);
 			mainGroup = 4244E7F9A06FC525643E9DFD;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				49264A747DA222B9D3A48C9E /* XCRemoteSwiftPackageReference "SwiftAprilTag" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F4CE9390596555841E0B4008 /* Products */;
 			projectDirPath = "";
@@ -240,34 +171,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1F14575E9752631AFF1BBE99 /* ARFluidView.swift in Sources */,
-				C8ADB4D7AD03E5B174F42C87 /* AppFlowModel.swift in Sources */,
-				C712DAD4F402F278F5B0DE16 /* AppFlowView.swift in Sources */,
-				8D4E00FAA4AB877F8E435998 /* AutoPourSource.swift in Sources */,
-				018707404E79CD207AEB9213 /* CupPose.swift in Sources */,
-				A4400DD56E9DA32C940024E5 /* CupSpace.swift in Sources */,
-				AF443E02D13C941D9CBA6754 /* DotRegistrationOverlay.swift in Sources */,
-				2810C92B0499DFE0B80D00E4 /* Fluid.metal in Sources */,
-				E2007BA3244322D9D7FB900D /* FluidBlitter.swift in Sources */,
-				6E8B766BDEAE945ED98DCD06 /* FluidSimulation.swift in Sources */,
-				27484408B388D4373CE6D217 /* GuidanceOverlay.swift in Sources */,
-				2595D7A4811BDFF27E59B212 /* LatteArtApp.swift in Sources */,
-				36B6DB15C0D640A538FF1EEF /* LevelModel.swift in Sources */,
-				AF08C6BDE8AF67CFD191C255 /* MetalContext.swift in Sources */,
-				EC8201A43B21BA264CED8E73 /* MetalFluidView.swift in Sources */,
-				EEACD92D68FC188643494DF9 /* PatternGuide.swift in Sources */,
-				1DD8249DAAB9B06D819ED107 /* PatternLibrary.swift in Sources */,
-				CDDFC1FE5EA6CA14AABD1D36 /* PatternSelectView.swift in Sources */,
-				13B94C37799481F5922AD39B /* Phase.swift in Sources */,
-				DDA4D6DFB7F4EF2F27E4C687 /* PourSample.swift in Sources */,
-				67FA21753FF9E40CB93AEBEE /* PourSource.swift in Sources */,
-				EEA70AB4B5FFD5EF75C81552 /* PourStep.swift in Sources */,
-				29B497047892B4C5E556D8B1 /* PourView.swift in Sources */,
-				8CA115DD516E1BA6B18C3E33 /* ResultView.swift in Sources */,
-				66B2F2B19B7FD191798BF1C3 /* SetupView.swift in Sources */,
-				B508B98DF5265CA022F42DAE /* SimulationController.swift in Sources */,
-				B5696E45387DC326238C2FFC /* SurfaceCalibrationOverlay.swift in Sources */,
-				D368987D3E0AF555DF111E1B /* TouchPourSource.swift in Sources */,
+				5DDCDF100D65B266D0C2DB31 /* AprilTagPourSource.swift in Sources */,
+				104124D834860B2BE50B476F /* AprilTagTracker.swift in Sources */,
+				9E7BD0EE162D508F90D0A989 /* AutoPourSource.swift in Sources */,
+				AF9FCE3EC606D5A4100CCEEF /* CupGeometry.swift in Sources */,
+				F7512B110534827A1A8DA2FA /* CupPose.swift in Sources */,
+				ED4FBD89F718E5B1D7F6F5F2 /* CupSpace.swift in Sources */,
+				D2BB56BF4C76F28B49CD69D0 /* LatteArtApp.swift in Sources */,
+				94F05AFE2A7F914BA7BCE86C /* PourSample.swift in Sources */,
+				59F562EEA9244D9AD5AA7E62 /* PourSource.swift in Sources */,
+				0DED854D1111023DCD238E07 /* Simulation.swift in Sources */,
+				1F64563BF90338E258BC6F15 /* TouchPourSource.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -340,7 +254,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = L6599J28A4;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LatteArt/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -427,7 +340,6 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				DEVELOPMENT_TEAM = L6599J28A4;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LatteArt/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -463,6 +375,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		49264A747DA222B9D3A48C9E /* XCRemoteSwiftPackageReference "SwiftAprilTag" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/keyqcloud/SwiftAprilTag.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		14D600C4B18F2C4F11E4B221 /* SwiftAprilTag */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 49264A747DA222B9D3A48C9E /* XCRemoteSwiftPackageReference "SwiftAprilTag" */;
+			productName = SwiftAprilTag;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 26E2CCAA68D39D484E039B0D /* Project object */;
 }

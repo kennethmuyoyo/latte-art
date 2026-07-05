@@ -76,6 +76,8 @@ We placed 2 AprilTags (one at the spout, one on the opposite back side).
 
 **The Math:** The distance between these two tags in 3D space gives us the exact tilt of the pitcher, which dictates the pour intensity. By calculating the pixel size of the tags relative to the camera, we determine the Z-height of the pitcher relative to the cup, accurately triggering the phase shift in our Metal simulation (High pour = Mixing phase, Low pour = Foam Drawing phase).
 
+*Implementation note:* the pixel-size-vs-camera heuristic above was superseded during implementation — AprilTag pose estimation already yields true 3D translation for each tag, so pour height is computed directly as the spout tag's signed distance above the cup's detected plane, which is simpler and more accurate than a pixel-size proxy.
+
 **Occlusion Risk:** We acknowledge the spout tag will likely get wet or occluded by the liquid stream/hands during a real pour. The two-tag system provides a fallback if one is occluded, but testing this occlusion threshold is our first physical testing priority.
 
 ### For the Cup
@@ -91,6 +93,8 @@ By applying the geometric circumcircle formula to the (X,Y,Z) coordinates of the
 ## The Revised Decision
 
 **Final decision:** We are using the Vision Framework combined with an AprilTag C-Library Swift Wrapper for pose estimation, feeding that geometric data directly into MetalKit for the fluid simulation, and rendering the UI guides with CoreGraphics. ARKit is used strictly to provide stable camera intrinsics and world-space alignment.
+
+*Implementation note:* in the shipped implementation, tag detection runs directly against ARKit's captured pixel buffer via the `SwiftAprilTag` wrapper rather than through a `VNRequest` — the Vision framework itself isn't directly invoked. "Vision framework" above describes the conceptual sensor-layer role (turning camera pixels into geometric data), not a literal `import Vision` dependency.
 
 **What changed since Section 1, and why:** We moved from a "Black Box ML" approach to a "Deterministic Geometry" approach. Apple's 3D object tracking sounded great, but physical reality (shiny metal) made it impossible. AprilTags provide instant, zero-training, robust 6DoF tracking that is entirely sufficient for pour-mechanics feedback.
 

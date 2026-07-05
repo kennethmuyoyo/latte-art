@@ -22,15 +22,23 @@ struct PourSample {
 
     var time: TimeInterval
 
+    /// Mixing(false)/drawing(true) hint from sources that can derive it
+    /// physically (pitcher pour height). `nil` = "no opinion" — the consumer
+    /// falls back to its own mode-based default. Touch/scripted sources leave
+    /// this `nil`.
+    var layingMilk: Bool? = nil
+
     init(uv: SIMD2<Float>,
          velocity: SIMD2<Float> = .zero,
          flowRate: Float = 1,
          confidence: Float = 1,
+         layingMilk: Bool? = nil,
          time: TimeInterval) {
         self.uv = uv
         self.velocity = velocity
         self.flowRate = flowRate
         self.confidence = confidence
+        self.layingMilk = layingMilk
         self.time = time
     }
 }

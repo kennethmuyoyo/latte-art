@@ -14,12 +14,19 @@ settings:
     TARGETED_DEVICE_FAMILY: "1"
     ENABLE_PREVIEWS: "YES"
 
+packages:
+  SwiftAprilTag:
+    url: https://github.com/keyqcloud/SwiftAprilTag.git
+    from: 1.0.0
+
 targets:
   LatteArt:
     type: application
     platform: iOS
     sources:
       - path: LatteArt
+    dependencies:
+      - package: SwiftAprilTag
     info:
       path: LatteArt/Info.plist
       properties:
