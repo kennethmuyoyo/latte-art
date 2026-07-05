@@ -1,8 +1,9 @@
 import Foundation
 
-/// Abstract source of pour input. Vision (`WaterPourTracker`) and touch
-/// (`TouchPourSource`) both conform, so the rest of the app is agnostic to how
-/// the pour is sensed. Swapping perception in later touches no simulation code.
+/// Abstract source of pour input. Touch (`TouchPourSource`) and the scripted
+/// demo (`AutoPourSource`) conform, so the rest of the app is agnostic to how the
+/// pour is sensed. Real pour detection (ripples on the tracked surface) will be a
+/// future `PourSource`, so swapping it in touches no simulation code.
 protocol PourSource: AnyObject {
     /// The most recent sample, or `nil` when nothing is being poured right now.
     var current: PourSample? { get }

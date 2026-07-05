@@ -1,5 +1,12 @@
 import SwiftUI
 import Combine
+import ARKit
+
+/// How the live pour screen renders + tracks the cup.
+enum RenderMode {
+    case arkit    // LiDAR device: ARSCNView + yellow-dot cup tracking (the real experience)
+    case virtual  // Simulator / no ARKit: centered virtual cup + touch
+}
 
 /// Owns the app's phase state machine and coordinates the simulation, the pour
 /// source, and the pattern guide across phases (spec §2).
@@ -12,9 +19,8 @@ final class AppFlowModel: ObservableObject {
     let controller: SimulationController
     let touchSource = TouchPourSource()
 
-    /// Live camera + Vision water tracking. Present only on a real device; nil in
-    /// the Simulator, where touch drives the sim instead.
-    let perception: PerceptionManager?
+    /// Which render/track path this device uses (chosen once at launch).
+    let renderMode: RenderMode
 
     private var cancellables = Set<AnyCancellable>()
 
@@ -28,12 +34,16 @@ final class AppFlowModel: ObservableObject {
         controller.use(pourSource: touchSource)
 
         #if targetEnvironment(simulator)
-        perception = nil
+        renderMode = .virtual
         #else
-        let pm = PerceptionManager(ctx: ctx)
-        pm.attach(controller: controller)   // camera feeds the sim's cup + pours
-        perception = pm
-        controller.isCameraDriven = true    // gate fluid/pours on cup acquisition
+        // The real experience needs ARKit (LiDAR dot tracking); fall back to the
+        // virtual cup on any device without world tracking so the app still runs.
+        if ARWorldTrackingConfiguration.isSupported {
+            renderMode = .arkit
+            controller.isCameraDriven = true   // gate fluid/pours until the cup is locked
+        } else {
+            renderMode = .virtual
+        }
         #endif
 
         // Drive the pattern guide from the sim's frame loop.
@@ -77,9 +87,6 @@ final class AppFlowModel: ObservableObject {
     }
 
     func begin() {
-        // Start the camera as the user picks a pattern so the cup is locked on
-        // by the time they begin pouring (device only; no-op in the Simulator).
-        perception?.start()
         phase = .patternSelect
     }
 
@@ -107,7 +114,6 @@ final class AppFlowModel: ObservableObject {
     func restart() {
         controller.reset()
         controller.releaseCup()   // re-acquire the cup for the next run (device)
-        perception?.releaseCupDepth()
         guide?.reset()
         guide = nil
         finalScore = nil

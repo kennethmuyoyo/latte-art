@@ -294,49 +294,6 @@ fragment float4 fsQuadFragment(VOut in [[stage_in]],
     return tex.sample(s, in.uv);
 }
 
-// Camera background with aspect-fill. `uvScale` shrinks the sampled region so the
-// portrait camera texture fills the (portrait) view without distortion.
-fragment float4 cameraFragment(VOut in [[stage_in]],
-                               texture2d<float, access::sample> tex [[texture(0)]],
-                               constant float2& uvScale [[buffer(0)]]) {
-    constexpr sampler s(coord::normalized, address::clamp_to_edge, filter::linear);
-    float2 uv = (in.uv - 0.5) * uvScale + 0.5;
-    return tex.sample(s, uv);
-}
-
-// Coffee with DEPTH OCCLUSION (spec §13): the fluid is drawn into the cup, but
-// wherever the LiDAR depth is closer than the cup plane (jug / hand / stream in
-// front of the cup), the coffee's alpha is dropped so the real object shows
-// through. `depthUVScale` aspect-fills the depth map the same way as the camera.
-struct OcclusionParams {
-    float2 drawableSize;   // render target size in pixels
-    float2 depthUVScale;   // aspect-fill scale for the depth map
-    float  cupDepth;       // meters, cup surface plane
-    float  margin;         // meters closer-than-cup to count as foreground
-    float  hasDepth;       // 1 = apply occlusion, 0 = plain
-};
-
-fragment float4 coffeeOccludedFragment(VOut in [[stage_in]],
-                                       texture2d<float, access::sample> fluid  [[texture(0)]],
-                                       texture2d<float, access::sample> depth  [[texture(1)]],
-                                       constant OcclusionParams& P [[buffer(0)]]) {
-    constexpr sampler s(coord::normalized, address::clamp_to_edge, filter::linear);
-    float4 coffee = fluid.sample(s, in.uv);
-
-    if (P.hasDepth > 0.5 && P.cupDepth > 0.0) {
-        float2 screenUV = in.pos.xy / P.drawableSize;
-        float2 dUV = (screenUV - 0.5) * P.depthUVScale + 0.5;
-        float  d   = depth.sample(s, dUV).r;
-        if (d > 0.05) {                                   // valid depth only
-            float th = P.cupDepth - P.margin;
-            // foreground when closer than the cup plane (smaller depth).
-            float fg = 1.0 - smoothstep(th - 0.012, th + 0.012, d);
-            coffee.a *= (1.0 - fg);
-        }
-    }
-    return coffee;
-}
-
 // ----------------------------------------------------------------------------
 //  CLEAR kernels — zero a texture (format-agnostic).
 // ----------------------------------------------------------------------------

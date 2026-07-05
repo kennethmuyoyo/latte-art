@@ -7,27 +7,25 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0123FB21BE965BD13F5821E4 /* WaterPourTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080297C4EE048543E047E555 /* WaterPourTracker.swift */; };
 		018707404E79CD207AEB9213 /* CupPose.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9052A2E125B03C0ECF10DAD /* CupPose.swift */; };
 		13B94C37799481F5922AD39B /* Phase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8EB51C180F236D789D9CBFF /* Phase.swift */; };
 		1DD8249DAAB9B06D819ED107 /* PatternLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E1471571D9BF1E95B67B299 /* PatternLibrary.swift */; };
+		1F14575E9752631AFF1BBE99 /* ARFluidView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F46C9F056E126EE37D462F0 /* ARFluidView.swift */; };
 		2595D7A4811BDFF27E59B212 /* LatteArtApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86F5B3C927A3B0C6D78C5380 /* LatteArtApp.swift */; };
 		27484408B388D4373CE6D217 /* GuidanceOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = D296FFD6B143B828985A8B75 /* GuidanceOverlay.swift */; };
 		2810C92B0499DFE0B80D00E4 /* Fluid.metal in Sources */ = {isa = PBXBuildFile; fileRef = 4123ACD6561ADB19C9B31538 /* Fluid.metal */; };
 		29B497047892B4C5E556D8B1 /* PourView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F9205609FB2D3240B4D3182 /* PourView.swift */; };
 		36B6DB15C0D640A538FF1EEF /* LevelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 699FEAF82B28EE704F49B4E7 /* LevelModel.swift */; };
-		3960597C3C8D978CB7A662F9 /* PerceptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 360D298BDF1E04ADEF2CCBCF /* PerceptionManager.swift */; };
-		3B8ED92F7F27A0F6E2AD9930 /* CameraBlitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C756515CDE4892BD773C747 /* CameraBlitter.swift */; };
 		66B2F2B19B7FD191798BF1C3 /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 38CD279A3F8F619959B5FFD5 /* SetupView.swift */; };
 		67FA21753FF9E40CB93AEBEE /* PourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DB419D907F25F6F554E04A9 /* PourSource.swift */; };
 		6E8B766BDEAE945ED98DCD06 /* FluidSimulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7C6EBB152DE8E8CF31652E3 /* FluidSimulation.swift */; };
 		8CA115DD516E1BA6B18C3E33 /* ResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7987099DA6FB3C03532E3135 /* ResultView.swift */; };
 		8D4E00FAA4AB877F8E435998 /* AutoPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCFDFAED956ED0AE1FBEEAA2 /* AutoPourSource.swift */; };
 		A4400DD56E9DA32C940024E5 /* CupSpace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B23BF3A5D532A6BDDA167A0 /* CupSpace.swift */; };
-		A91AE8C98C800DE3AAABE3E9 /* CupDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854C26E417210B4E4C2A3A79 /* CupDetector.swift */; };
 		AF08C6BDE8AF67CFD191C255 /* MetalContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ABC3041A221CF0FFD97E5D5 /* MetalContext.swift */; };
+		AF443E02D13C941D9CBA6754 /* DotRegistrationOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67402940A8018E79173A7CA7 /* DotRegistrationOverlay.swift */; };
 		B508B98DF5265CA022F42DAE /* SimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB98BE1931BF295765432459 /* SimulationController.swift */; };
-		BC18BCBA7007CBF1F5BB70F5 /* CameraFeed.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C506E3BC6FE4D52619856B2 /* CameraFeed.swift */; };
+		B5696E45387DC326238C2FFC /* SurfaceCalibrationOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79BDCA027993072D14FF0357 /* SurfaceCalibrationOverlay.swift */; };
 		C712DAD4F402F278F5B0DE16 /* AppFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BCAA7DAFEC1AE0645D07E29 /* AppFlowView.swift */; };
 		C8ADB4D7AD03E5B174F42C87 /* AppFlowModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66F70821BA4D4DE227843CD0 /* AppFlowModel.swift */; };
 		CDDFC1FE5EA6CA14AABD1D36 /* PatternSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A834E710356D0839F72831B /* PatternSelectView.swift */; };
@@ -40,9 +38,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		080297C4EE048543E047E555 /* WaterPourTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaterPourTracker.swift; sourceTree = "<group>"; };
 		0E6724732E2B4BC3C1A2929E /* PatternGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternGuide.swift; sourceTree = "<group>"; };
-		360D298BDF1E04ADEF2CCBCF /* PerceptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerceptionManager.swift; sourceTree = "<group>"; };
 		38CD279A3F8F619959B5FFD5 /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupView.swift; sourceTree = "<group>"; };
 		4123ACD6561ADB19C9B31538 /* Fluid.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Fluid.metal; sourceTree = "<group>"; };
 		4A834E710356D0839F72831B /* PatternSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternSelectView.swift; sourceTree = "<group>"; };
@@ -53,15 +49,15 @@
 		5B38FBC2A86D50CBA531B239 /* TouchPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchPourSource.swift; sourceTree = "<group>"; };
 		5E1471571D9BF1E95B67B299 /* PatternLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternLibrary.swift; sourceTree = "<group>"; };
 		66F70821BA4D4DE227843CD0 /* AppFlowModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowModel.swift; sourceTree = "<group>"; };
+		67402940A8018E79173A7CA7 /* DotRegistrationOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DotRegistrationOverlay.swift; sourceTree = "<group>"; };
 		699FEAF82B28EE704F49B4E7 /* LevelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelModel.swift; sourceTree = "<group>"; };
+		6F46C9F056E126EE37D462F0 /* ARFluidView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARFluidView.swift; sourceTree = "<group>"; };
 		72705C65803CCCF7B4636211 /* PourStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourStep.swift; sourceTree = "<group>"; };
 		7987099DA6FB3C03532E3135 /* ResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultView.swift; sourceTree = "<group>"; };
+		79BDCA027993072D14FF0357 /* SurfaceCalibrationOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SurfaceCalibrationOverlay.swift; sourceTree = "<group>"; };
 		7BCAA7DAFEC1AE0645D07E29 /* AppFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowView.swift; sourceTree = "<group>"; };
-		854C26E417210B4E4C2A3A79 /* CupDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupDetector.swift; sourceTree = "<group>"; };
 		86F5B3C927A3B0C6D78C5380 /* LatteArtApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LatteArtApp.swift; sourceTree = "<group>"; };
-		8C756515CDE4892BD773C747 /* CameraBlitter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraBlitter.swift; sourceTree = "<group>"; };
 		9838B2BCDB97181740403476 /* LatteArt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LatteArt.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		9C506E3BC6FE4D52619856B2 /* CameraFeed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraFeed.swift; sourceTree = "<group>"; };
 		9F9205609FB2D3240B4D3182 /* PourView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourView.swift; sourceTree = "<group>"; };
 		B2DD417161DFFF67384BA051 /* MetalFluidView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalFluidView.swift; sourceTree = "<group>"; };
 		B8EB51C180F236D789D9CBFF /* Phase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phase.swift; sourceTree = "<group>"; };
@@ -102,12 +98,15 @@
 			isa = PBXGroup;
 			children = (
 				7BCAA7DAFEC1AE0645D07E29 /* AppFlowView.swift */,
+				6F46C9F056E126EE37D462F0 /* ARFluidView.swift */,
+				67402940A8018E79173A7CA7 /* DotRegistrationOverlay.swift */,
 				D296FFD6B143B828985A8B75 /* GuidanceOverlay.swift */,
 				B2DD417161DFFF67384BA051 /* MetalFluidView.swift */,
 				4A834E710356D0839F72831B /* PatternSelectView.swift */,
 				9F9205609FB2D3240B4D3182 /* PourView.swift */,
 				7987099DA6FB3C03532E3135 /* ResultView.swift */,
 				38CD279A3F8F619959B5FFD5 /* SetupView.swift */,
+				79BDCA027993072D14FF0357 /* SurfaceCalibrationOverlay.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -115,7 +114,6 @@
 		8BDDC60DF73594A351A5C750 /* Rendering */ = {
 			isa = PBXGroup;
 			children = (
-				8C756515CDE4892BD773C747 /* CameraBlitter.swift */,
 				4AA9126E42B50B4A84AC187D /* FluidBlitter.swift */,
 				5ABC3041A221CF0FFD97E5D5 /* MetalContext.swift */,
 			);
@@ -157,11 +155,7 @@
 			isa = PBXGroup;
 			children = (
 				CCFDFAED956ED0AE1FBEEAA2 /* AutoPourSource.swift */,
-				9C506E3BC6FE4D52619856B2 /* CameraFeed.swift */,
-				854C26E417210B4E4C2A3A79 /* CupDetector.swift */,
-				360D298BDF1E04ADEF2CCBCF /* PerceptionManager.swift */,
 				5B38FBC2A86D50CBA531B239 /* TouchPourSource.swift */,
-				080297C4EE048543E047E555 /* WaterPourTracker.swift */,
 			);
 			path = Perception;
 			sourceTree = "<group>";
@@ -246,14 +240,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1F14575E9752631AFF1BBE99 /* ARFluidView.swift in Sources */,
 				C8ADB4D7AD03E5B174F42C87 /* AppFlowModel.swift in Sources */,
 				C712DAD4F402F278F5B0DE16 /* AppFlowView.swift in Sources */,
 				8D4E00FAA4AB877F8E435998 /* AutoPourSource.swift in Sources */,
-				3B8ED92F7F27A0F6E2AD9930 /* CameraBlitter.swift in Sources */,
-				BC18BCBA7007CBF1F5BB70F5 /* CameraFeed.swift in Sources */,
-				A91AE8C98C800DE3AAABE3E9 /* CupDetector.swift in Sources */,
 				018707404E79CD207AEB9213 /* CupPose.swift in Sources */,
 				A4400DD56E9DA32C940024E5 /* CupSpace.swift in Sources */,
+				AF443E02D13C941D9CBA6754 /* DotRegistrationOverlay.swift in Sources */,
 				2810C92B0499DFE0B80D00E4 /* Fluid.metal in Sources */,
 				E2007BA3244322D9D7FB900D /* FluidBlitter.swift in Sources */,
 				6E8B766BDEAE945ED98DCD06 /* FluidSimulation.swift in Sources */,
@@ -265,7 +258,6 @@
 				EEACD92D68FC188643494DF9 /* PatternGuide.swift in Sources */,
 				1DD8249DAAB9B06D819ED107 /* PatternLibrary.swift in Sources */,
 				CDDFC1FE5EA6CA14AABD1D36 /* PatternSelectView.swift in Sources */,
-				3960597C3C8D978CB7A662F9 /* PerceptionManager.swift in Sources */,
 				13B94C37799481F5922AD39B /* Phase.swift in Sources */,
 				DDA4D6DFB7F4EF2F27E4C687 /* PourSample.swift in Sources */,
 				67FA21753FF9E40CB93AEBEE /* PourSource.swift in Sources */,
@@ -274,8 +266,8 @@
 				8CA115DD516E1BA6B18C3E33 /* ResultView.swift in Sources */,
 				66B2F2B19B7FD191798BF1C3 /* SetupView.swift in Sources */,
 				B508B98DF5265CA022F42DAE /* SimulationController.swift in Sources */,
+				B5696E45387DC326238C2FFC /* SurfaceCalibrationOverlay.swift in Sources */,
 				D368987D3E0AF555DF111E1B /* TouchPourSource.swift in Sources */,
-				0123FB21BE965BD13F5821E4 /* WaterPourTracker.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

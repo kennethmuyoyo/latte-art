@@ -28,6 +28,27 @@ final class SimulationController: ObservableObject {
     /// camera-driven device, the fluid and pour input are gated on this.
     private(set) var isCupAcquired = false
 
+    /// Toggle for the on-screen dot/calibration overlay (ARKit path).
+    @Published var showTrackingDebug = true
+
+    // Calibration for the ARKit tap-registration path (see ARFluidView).
+    @Published var surfaceDrop: Float = 0.01      // meters below the rim to the water surface
+    @Published var radiusScale: Float = 0.95      // disc radius vs the tapped rim circle
+    @Published var surfaceFillRise: Float = 0.03  // extra rise as the cup fills
+
+    /// The 3 registration points the user has tapped so far, in view points
+    /// (drawn by the overlay). Cleared on reset; 3 → registered.
+    @Published var tappedPoints: [CGPoint] = []
+    /// True once all 3 rim points are tapped and the cup circle is anchored.
+    @Published var cupRegistered = false
+
+    /// Clear the tapped points so the user can re-register the cup.
+    func resetCupRegistration() {
+        cupRegistered = false
+        tappedPoints = []
+        cupPose = CupPose(center: cupPose.center, axes: cupPose.axes, angle: cupPose.angle, confidence: 0)
+    }
+
     /// Whether a camera is driving the cup (device). When true, nothing pours
     /// until a cup is acquired; in the Simulator this stays false.
     var isCameraDriven = false
@@ -69,6 +90,15 @@ final class SimulationController: ObservableObject {
         isReadyForFoam = false
         mode = .fill
         latestPour = nil
+    }
+
+    /// Update the pose from continuous cup tracking (device). Keeps the cup
+    /// acquired and skips no-op updates so we don't publish 60x/sec while the
+    /// cup is still. Ignored before acquisition or in the Simulator.
+    func updateTrackedPose(_ pose: CupPose) {
+        guard isCupAcquired else { return }
+        if cupPose.approxEquals(pose) { return }
+        cupPose = pose
     }
 
     /// Forget the acquired cup so it must be re-acquired (used on restart). No

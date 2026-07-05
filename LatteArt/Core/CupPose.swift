@@ -1,8 +1,9 @@
 import CoreGraphics
 import simd
 
-/// Where the real cup sits in the camera view: an ellipse (perspective view of a
-/// circle). Produced by `CupDetector`; consumed by the compositor to warp the
+/// Where the cup sits on screen: an ellipse (perspective view of a circle).
+/// On device it's the projection of the ARKit dot-tracked cup; in the Simulator
+/// it's a centered virtual cup. Consumed by the compositor/overlays to warp the
 /// sim's normalized circle onto the real rim.
 ///
 /// All values are in normalized view coordinates `[0,1]` (y-down), so they are
@@ -36,6 +37,14 @@ struct CupPose: Equatable {
         let rotated = SIMD2<Float>(scaled.x * c - scaled.y * s,
                                    scaled.x * s + scaled.y * c)
         return center + rotated
+    }
+
+    /// Near-equality within a tolerance. Used by continuous tracking to skip
+    /// publishing sub-pixel per-frame jitter (which would churn SwiftUI at 60Hz).
+    func approxEquals(_ other: CupPose, tol: Float = 0.002) -> Bool {
+        abs(center.x - other.center.x) < tol && abs(center.y - other.center.y) < tol &&
+        abs(axes.x - other.axes.x) < tol && abs(axes.y - other.axes.y) < tol &&
+        abs(angle - other.angle) < tol && confidence == other.confidence
     }
 
     /// Inverse of `viewPoint`: normalized view space -> cup-normalized UV.

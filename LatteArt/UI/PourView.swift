@@ -7,22 +7,30 @@ struct PourView: View {
     @ObservedObject var model: AppFlowModel
     @ObservedObject var controller: SimulationController
 
-    /// A cup is "acquired" in the Simulator (virtual) or once the camera has
-    /// detected / the user has tapped one on device.
+    /// A cup is "acquired" in the Simulator (virtual) or once the user has tapped
+    /// one on device (ARKit anchor / camera detection).
     private var hasCup: Bool {
-        model.perception == nil || controller.cupPose.confidence > 0
+        model.renderMode == .virtual || controller.cupPose.confidence > 0
     }
 
     var body: some View {
         ZStack {
             // Fluid (and, on device, the camera behind it). The fluid only appears
-            // once a cup is acquired — the shader is placed INTO the cup, not shown
-            // from the start.
-            MetalFluidView(controller: controller, touchSource: model.touchSource,
-                           perception: model.perception)
-                .ignoresSafeArea()
+            // once a cup is acquired — placed INTO the cup, not shown from the start.
+            switch model.renderMode {
+            case .arkit:
+                ARFluidView(controller: controller, touchSource: model.touchSource)
+                    .ignoresSafeArea()
+            case .virtual:
+                MetalFluidView(controller: controller, touchSource: model.touchSource)
+                    .ignoresSafeArea()
+            }
 
-            if hasCup {
+            if model.renderMode == .arkit, !controller.cupRegistered {
+                // Onboarding: guide the user to place & lock their 3 rim dots.
+                DotRegistrationOverlay(controller: controller)
+                    .ignoresSafeArea()
+            } else if hasCup {
                 // Guidance overlay maps cup-UV to the acquired cup.
                 GuidanceOverlay(pose: controller.cupPose,
                                 fillLevel: controller.fillLevel,
@@ -30,8 +38,23 @@ struct PourView: View {
                                 guide: model.phase == .formArt ? model.guide : nil)
                     .ignoresSafeArea()
 
+                // ARKit path: surface-placement sliders, docked at the bottom.
+                if model.renderMode == .arkit, controller.showTrackingDebug {
+                    VStack {
+                        Spacer()
+                        SurfaceCalibrationOverlay(controller: controller,
+                                                  onHide: { controller.showTrackingDebug = false })
+                            .padding(.bottom, 80)
+                    }
+                }
+
                 VStack {
                     header
+                    if model.renderMode == .arkit {
+                        Button("Re-place dots") { controller.resetCupRegistration() }
+                            .font(.caption).padding(6)
+                            .background(.black.opacity(0.4), in: Capsule())
+                    }
                     Spacer()
                     footer
                 }
