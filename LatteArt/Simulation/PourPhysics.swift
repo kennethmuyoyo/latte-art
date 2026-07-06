@@ -68,23 +68,37 @@ struct PourPhysics {
         var phi: Float
     }
 
-    /// The ONLY place that knows today's `PourSample` limitations. Maps the
-    /// interim contract fields onto the physics inputs; the TODO(contract)
-    /// notes mark what changes once the sensor ships raw measurements.
+    /// The ONLY place that maps `PourSample`'s fields onto the physics inputs.
+    /// The AprilTag device path ships raw measurements (`tiltRadians`,
+    /// `heightAboveRimMeters`); touch/demo sources leave them `nil` and fall
+    /// back to the legacy normalized signals. Physics decisions stay here
+    /// either way — the sensor never decides flow or mixing/drawing.
     func derive(from sample: PourSample, surfaceDepthBelowRim: Float) -> DerivedPour {
-        // TODO(contract): when PourSample ships raw `tiltRadians`, compute
-        // `flow(tilt:)` here instead of scaling the normalized flowRate.
-        let q = sample.flowRate * qMax
-
-        // TODO(contract): when PourSample ships `heightAboveRimMeters`, use
-        // `heightAboveRimMeters + surfaceDepthBelowRim` directly.
-        let base: Float
-        switch sample.layingMilk {
-        case .some(true):  base = 0.02   // laying milk in low & close
-        case .some(false): base = 0.10   // pouring high
-        case .none:        base = 0.04   // no opinion — moderate default
+        // Flow (ml/s). Prefer the real pitcher tilt through our own Q(θ) curve;
+        // fall back to scaling the legacy normalized flowRate (touch/demo).
+        let q: Float
+        if let tilt = sample.tiltRadians {
+            q = flow(tilt: tilt)
+        } else {
+            q = sample.flowRate * qMax
         }
-        let h = base + surfaceDepthBelowRim
+
+        // Fall height above the CURRENT liquid surface. Prefer the real spout
+        // height above the rim plane, plus how far the surface currently sits
+        // below that rim (the rim is a fixed physical reference; the surface
+        // depth is ours to track). Fall back to the coarse layingMilk hint.
+        let h: Float
+        if let rim = sample.heightAboveRimMeters {
+            h = max(rim + surfaceDepthBelowRim, 0.005)
+        } else {
+            let base: Float
+            switch sample.layingMilk {
+            case .some(true):  base = 0.02   // laying milk in low & close
+            case .some(false): base = 0.10   // pouring high
+            case .none:        base = 0.04   // no opinion — moderate default
+            }
+            h = base + surfaceDepthBelowRim
+        }
 
         let v = vImpact(flow: q, height: h)
         let fr = froude(flow: q, vImpact: v)
