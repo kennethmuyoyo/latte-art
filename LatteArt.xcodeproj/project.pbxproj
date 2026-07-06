@@ -19,6 +19,14 @@
 		D2BB56BF4C76F28B49CD69D0 /* LatteArtApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0478823C1B679BE388CE618 /* LatteArtApp.swift */; };
 		ED4FBD89F718E5B1D7F6F5F2 /* CupSpace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10BBBCB6BFD6F38F85206525 /* CupSpace.swift */; };
 		F7512B110534827A1A8DA2FA /* CupPose.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6F5F7158BDD961611FEC382 /* CupPose.swift */; };
+		FB01000000000000000001 /* MetalContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA01000000000000000001 /* MetalContext.swift */; };
+		FB01000000000000000002 /* Fluid.metal in Sources */ = {isa = PBXBuildFile; fileRef = FA01000000000000000002 /* Fluid.metal */; };
+		FB01000000000000000003 /* FluidSimulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA01000000000000000003 /* FluidSimulation.swift */; };
+		FB01000000000000000004 /* PourPhysics.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA01000000000000000004 /* PourPhysics.swift */; };
+		FB01000000000000000005 /* LevelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA01000000000000000005 /* LevelModel.swift */; };
+		FB01000000000000000006 /* FluidBlitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA01000000000000000006 /* FluidBlitter.swift */; };
+		FB01000000000000000007 /* SimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA01000000000000000007 /* SimulationController.swift */; };
+		FB01000000000000000008 /* SimulationDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA01000000000000000008 /* SimulationDebugView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,13 +36,21 @@
 		4565DF4FB938A635EFFBE95B /* Simulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulation.swift; sourceTree = "<group>"; };
 		8028DBAF1675F96CBA7A3F57 /* PourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourSource.swift; sourceTree = "<group>"; };
 		957D4D9E9A9E5DF9DE08C16C /* AprilTagPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AprilTagPourSource.swift; sourceTree = "<group>"; };
-		9838B2BCDB97181740403476 /* LatteArt.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LatteArt.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9838B2BCDB97181740403476 /* LatteArt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LatteArt.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CFCBB9B8F001EA627BC95663 /* AprilTagTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AprilTagTracker.swift; sourceTree = "<group>"; };
 		D0478823C1B679BE388CE618 /* LatteArtApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LatteArtApp.swift; sourceTree = "<group>"; };
 		D6F5F7158BDD961611FEC382 /* CupPose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupPose.swift; sourceTree = "<group>"; };
 		D7C291F27E3B9B0B80AA8953 /* CupGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupGeometry.swift; sourceTree = "<group>"; };
 		DB9F8841417BDD1BFB5FC5BD /* TouchPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchPourSource.swift; sourceTree = "<group>"; };
 		F342CF367C5890C6B5D7BE01 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		FA01000000000000000001 /* MetalContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalContext.swift; sourceTree = "<group>"; };
+		FA01000000000000000002 /* Fluid.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Fluid.metal; sourceTree = "<group>"; };
+		FA01000000000000000003 /* FluidSimulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FluidSimulation.swift; sourceTree = "<group>"; };
+		FA01000000000000000004 /* PourPhysics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourPhysics.swift; sourceTree = "<group>"; };
+		FA01000000000000000005 /* LevelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelModel.swift; sourceTree = "<group>"; };
+		FA01000000000000000006 /* FluidBlitter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FluidBlitter.swift; sourceTree = "<group>"; };
+		FA01000000000000000007 /* SimulationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationController.swift; sourceTree = "<group>"; };
+		FA01000000000000000008 /* SimulationDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationDebugView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,7 +111,15 @@
 		BE4DFE4E57A23FE192255658 /* Simulation */ = {
 			isa = PBXGroup;
 			children = (
+				FA01000000000000000002 /* Fluid.metal */,
+				FA01000000000000000006 /* FluidBlitter.swift */,
+				FA01000000000000000003 /* FluidSimulation.swift */,
+				FA01000000000000000005 /* LevelModel.swift */,
+				FA01000000000000000001 /* MetalContext.swift */,
+				FA01000000000000000004 /* PourPhysics.swift */,
 				4565DF4FB938A635EFFBE95B /* Simulation.swift */,
+				FA01000000000000000007 /* SimulationController.swift */,
+				FA01000000000000000008 /* SimulationDebugView.swift */,
 			);
 			path = Simulation;
 			sourceTree = "<group>";
@@ -138,11 +162,6 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
-				TargetAttributes = {
-					611CE05FBC3F3ECA03692B7A = {
-						DevelopmentTeam = "";
-					};
-				};
 			};
 			buildConfigurationList = 5BD9B2B92D643F46D401D7C3 /* Build configuration list for PBXProject "LatteArt" */;
 			developmentRegion = en;
@@ -171,6 +190,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FB01000000000000000001 /* MetalContext.swift in Sources */,
+				FB01000000000000000002 /* Fluid.metal in Sources */,
+				FB01000000000000000003 /* FluidSimulation.swift in Sources */,
+				FB01000000000000000004 /* PourPhysics.swift in Sources */,
+				FB01000000000000000005 /* LevelModel.swift in Sources */,
+				FB01000000000000000006 /* FluidBlitter.swift in Sources */,
+				FB01000000000000000007 /* SimulationController.swift in Sources */,
+				FB01000000000000000008 /* SimulationDebugView.swift in Sources */,
 				5DDCDF100D65B266D0C2DB31 /* AprilTagPourSource.swift in Sources */,
 				104124D834860B2BE50B476F /* AprilTagTracker.swift in Sources */,
 				9E7BD0EE162D508F90D0A989 /* AutoPourSource.swift in Sources */,
@@ -253,7 +280,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = YQ299RVZTY;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LatteArt/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -261,7 +290,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.signvrse.latteart;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pourfect;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -339,7 +369,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = YQ299RVZTY;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LatteArt/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -347,7 +379,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.signvrse.latteart;
+				PRODUCT_BUNDLE_IDENTIFIER = com.pourfect;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
