@@ -91,6 +91,8 @@ We placed 3 AprilTags on the rim/base.
 
 By applying the geometric circumcircle formula to the (X,Y,Z) coordinates of the three tags, we calculate the exact center and radius of the cup. Furthermore, the cross-product of these three points yields the normal vector of the cup's opening. By cross-referencing this plane with the iPhone's absolute gravity vector (via the IMU), we can mathematically calculate and render the horizontal water plane as the cup tilts, completely bypassing the need for depth-sensing hardware.
 
+**Physical setup:** the actual tags to print, their fixed IDs/sizes, and exact mounting positions for both the cup and the pitcher are in [`docs/tags/PLACEMENT.md`](docs/tags/PLACEMENT.md) — print [`docs/tags/print_sheet.png`](docs/tags/print_sheet.png) at 100% scale.
+
 ---
 
 ## The Revised Decision

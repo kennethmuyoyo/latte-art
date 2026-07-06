@@ -7,15 +7,25 @@ import QuartzCore
 /// tilts over the real cup, this produces the same `PourSample` stream
 /// `TouchPourSource` produces for the Simulator, so the rest of the app is
 /// unaffected.
+///
+/// Populates `PourSample.tiltRadians` / `.heightAboveRimMeters` with the raw
+/// measurements — see the contract note on `PourSample`. `flowRate` /
+/// `layingMilk` are also filled in as a derived legacy convenience, but
+/// Simulation's `PourPhysics` should treat the raw fields as the source of
+/// truth and own the tilt→flow curve and mixing/drawing decision itself.
 final class AprilTagPourSource: PourSource {
     private(set) var current: PourSample?
     var onSample: ((PourSample) -> Void)?
 
     /// Height above the cup's rim plane (meters) below which the pour is
     /// considered "drawing" (foam, layingMilk=true) rather than "mixing"
-    /// (plunging from height, layingMilk=false). Tune on device.
+    /// (plunging from height, layingMilk=false). Legacy-field derivation only
+    /// — Simulation should derive this decision itself from the raw
+    /// `heightAboveRimMeters` (e.g. via the Froude gate), not read this bool.
     var layingMilkHeightThresholdMeters: Float = 0.045
-    /// Tilt angle (radians, from horizontal) mapped to flowRate 0...1.
+    /// Tilt angle (radians, from horizontal) mapped to legacy `flowRate`
+    /// 0...1. Simulation should prefer computing flow from raw
+    /// `tiltRadians` via its own flow curve instead of reading `flowRate`.
     var restAngle: Float = 0.15
     var maxAngle: Float = 1.1
     /// Grace period before a momentary tag occlusion (e.g. a hand passing in
@@ -65,6 +75,8 @@ final class AprilTagPourSource: PourSource {
 
         var sample = PourSample(uv: uv, velocity: velocity, flowRate: flow, confidence: 1, time: time)
         sample.layingMilk = laying
+        sample.tiltRadians = tilt
+        sample.heightAboveRimMeters = height
         current = sample
         lastGoodSampleTime = time
         onSample?(sample)
