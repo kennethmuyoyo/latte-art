@@ -4,7 +4,7 @@ Physical setup for the sensor rig: 3 tags on the cup, 2 on the pitcher, all `tag
 
 ## What to print
 
-Print [`print_sheet.png`](print_sheet.png) at **100% / Actual Size** — do **not** let the print dialog "fit to page" or "scale to fit," or the tags will come out the wrong physical size and pose estimation will be wrong by that same scale factor. Individual tags are also available separately: [`tag_0.png`](tag_0.png), [`tag_1.png`](tag_1.png), [`tag_2.png`](tag_2.png), [`tag_10.png`](tag_10.png), [`tag_11.png`](tag_11.png).
+Print [`print_sheet.pdf`](print_sheet.pdf) at **100% / Actual Size** (PDF viewers default to this — avoid any "fit to page"/"shrink to fit" option). The PDF's page size is exactly 136×154&nbsp;mm with the true 24&nbsp;mm tag dimensions baked directly into the page geometry — not just image metadata a print dialog can silently ignore — so it's the more reliable format to print from. [`print_sheet.png`](print_sheet.png) (same layout, 304.8 DPI) is provided as a fallback if you need a raster image instead. Individual tags are also available separately: [`tag_0.png`](tag_0.png), [`tag_1.png`](tag_1.png), [`tag_2.png`](tag_2.png), [`tag_10.png`](tag_10.png), [`tag_11.png`](tag_11.png).
 
 After printing, **measure the verification ruler printed on the sheet**. It must measure exactly 60 mm.
 - If it does: measure any magenta-outlined square — it should be 24 mm per side. You're set; `AprilTagRoles.cupTagSizeMeters` / `pitcherTagSizeMeters` in `LatteArt/Sensor/AprilTagTracker.swift` are already `0.024` and need no change.

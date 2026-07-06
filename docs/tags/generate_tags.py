@@ -187,7 +187,8 @@ def build_print_sheet(tiles, out_dir: Path):
         font = font_small = ImageFont.load_default()
 
     draw.text((margin, margin),
-              "Latte Art — AprilTag print sheet. Print at 100% / Actual Size (no “fit to page”).",
+              "Latte Art — AprilTag print sheet. Print print_sheet.pdf at 100% / Actual Size "
+              "(no “fit to page”) — the ruler below is your final check.",
               fill="black", font=font_small)
 
     y = margin + title_h
@@ -225,6 +226,17 @@ def build_print_sheet(tiles, out_dir: Path):
     sheet.save(path, dpi=(DPI, DPI))
     print(f"  wrote {path.name}  ({sheet.width}x{sheet.height}px @ {DPI:.1f} DPI, "
           f"{sheet.width / DPI * 25.4:.0f}x{sheet.height / DPI * 25.4:.0f} mm)")
+
+    # PDF is the more reliable "actual size" format: the page's MediaBox is
+    # set directly from resolution (pixels / DPI), so the physical size is
+    # part of the page geometry itself, not metadata a print dialog can
+    # ignore the way it can with a PNG's DPI tag.
+    pdf_path = out_dir / "print_sheet.pdf"
+    sheet.save(pdf_path, "PDF", resolution=DPI)
+    pdf_w_mm = sheet.width / DPI * 25.4
+    pdf_h_mm = sheet.height / DPI * 25.4
+    print(f"  wrote {pdf_path.name}  (page {pdf_w_mm:.0f}x{pdf_h_mm:.0f} mm — "
+          f"fits both A4 [210x297mm] and US Letter [216x279mm] with margin to spare)")
 
 
 if __name__ == "__main__":
