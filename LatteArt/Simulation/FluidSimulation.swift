@@ -7,6 +7,7 @@ struct Splat {
     var radius: Float             // uv units
     var dye: Float                // white amount to add (already × φ)
     var momentum: SIMD2<Float>    // cells/sec impulse along the stream direction
+    var displacement: Float = 0   // divergence-source strength; foam volume deposition
 }
 
 /// 2D Stam Stable Fluids on Metal compute. Owns the velocity/dye/pressure
@@ -20,9 +21,9 @@ final class FluidSimulation {
     private var vel: (MTLTexture, MTLTexture)
     private var dye: (MTLTexture, MTLTexture)
     private var prs: (MTLTexture, MTLTexture)
-    private let div: MTLTexture
+    private var div: (MTLTexture, MTLTexture)
 
-    private let pClear, pAdvect, pSplat, pDivergence, pJacobi, pSubtract, pDamp: MTLComputePipelineState
+    private let pClear, pAdvect, pSplat, pDivergence, pDivSource, pJacobi, pSubtract, pDamp: MTLComputePipelineState
 
     private var pending: [Splat] = []
     private let jacobiIterations = 24
@@ -39,10 +40,11 @@ final class FluidSimulation {
             lib.makeFunction(name: name).flatMap { try? device.makeComputePipelineState(function: $0) }
         }
         guard let c = pipe("k_clear"), let a = pipe("k_advect"), let s = pipe("k_splat"),
-              let d = pipe("k_divergence"), let j = pipe("k_jacobi"), let g = pipe("k_subtractGradient"),
+              let d = pipe("k_divergence"), let ds = pipe("k_divergenceSource"),
+              let j = pipe("k_jacobi"), let g = pipe("k_subtractGradient"),
               let dm = pipe("k_dampVelocity")
         else { return nil }
-        (pClear, pAdvect, pSplat, pDivergence, pJacobi, pSubtract, pDamp) = (c, a, s, d, j, g, dm)
+        (pClear, pAdvect, pSplat, pDivergence, pDivSource, pJacobi, pSubtract, pDamp) = (c, a, s, d, ds, j, g, dm)
 
         self.device = device
         self.size = size
@@ -54,8 +56,8 @@ final class FluidSimulation {
             return device.makeTexture(descriptor: d)
         }
         guard let v0 = tex(), let v1 = tex(), let d0 = tex(), let d1 = tex(),
-              let p0 = tex(), let p1 = tex(), let dv = tex() else { return nil }
-        vel = (v0, v1); dye = (d0, d1); prs = (p0, p1); div = dv
+              let p0 = tex(), let p1 = tex(), let dv0 = tex(), let dv1 = tex() else { return nil }
+        vel = (v0, v1); dye = (d0, d1); prs = (p0, p1); div = (dv0, dv1)
         dyeTexture = d0
     }
 
@@ -63,7 +65,7 @@ final class FluidSimulation {
 
     func reset(in cb: MTLCommandBuffer) {
         pending.removeAll()
-        for t in [vel.0, vel.1, dye.0, dye.1, prs.0, prs.1, div] { clear(t, in: cb) }
+        for t in [vel.0, vel.1, dye.0, dye.1, prs.0, prs.1, div.0, div.1] { clear(t, in: cb) }
     }
 
     func step(dt: Float, in cb: MTLCommandBuffer) {
@@ -86,13 +88,21 @@ final class FluidSimulation {
                 flip(&vel)
             }
         }
+
+        // 3. project velocity to divergence-free (incompressibility). Before the
+        // solve, bias the divergence input with each pending splat's volume
+        // source so real +S divergence survives as a self-consistent outflow.
+        dispatch(pDivergence, [vel.0, div.0], in: cb)
+        for s in pending where s.displacement != 0 {
+            divergenceSource(from: div.0, to: div.1, point: s.point,
+                             radius: s.radius, amount: s.displacement, in: cb)
+            flip(&div)
+        }
         pending.removeAll()
 
-        // 3. project velocity to divergence-free (incompressibility)
-        dispatch(pDivergence, [vel.0, div], in: cb)
         clear(prs.0, in: cb)
         for _ in 0..<jacobiIterations {
-            dispatch(pJacobi, [prs.0, div, prs.1], in: cb)
+            dispatch(pJacobi, [prs.0, div.0, prs.1], in: cb)
             flip(&prs)
         }
         dispatch(pSubtract, [prs.0, vel.0, vel.1], in: cb)
@@ -100,7 +110,8 @@ final class FluidSimulation {
 
         // 4. Rayleigh friction + wall no-slip: bleed off momentum (foam/bottom
         // drag) and pin velocity to zero at the cup rim so nudges don't slosh
-        // wall to wall. Final velocity op of the step.
+        // wall to wall. Final velocity op of the step. This also erodes the
+        // source-driven outflow — fine and physical: foam fronts stall quickly.
         damp(from: vel.0, to: vel.1, damping: velocityDamping, in: cb)
         flip(&vel)
 
@@ -157,6 +168,17 @@ final class FluidSimulation {
         e.setBytes(&pt, length: MemoryLayout<SIMD2<Float>>.size, index: 0)
         e.setBytes(&r, length: MemoryLayout<Float>.size, index: 1)
         e.setBytes(&v, length: MemoryLayout<SIMD4<Float>>.size, index: 2)
+        run(e)
+    }
+
+    private func divergenceSource(from src: MTLTexture, to dst: MTLTexture,
+                                  point: SIMD2<Float>, radius: Float, amount: Float,
+                                  in cb: MTLCommandBuffer) {
+        guard let e = encoder(cb, pDivSource, [src, dst]) else { return }
+        var pt = point, r = radius, a = amount
+        e.setBytes(&pt, length: MemoryLayout<SIMD2<Float>>.size, index: 0)
+        e.setBytes(&r, length: MemoryLayout<Float>.size, index: 1)
+        e.setBytes(&a, length: MemoryLayout<Float>.size, index: 2)
         run(e)
     }
 

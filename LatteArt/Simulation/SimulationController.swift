@@ -52,6 +52,12 @@ final class SimulationController: ObservableObject {
     // milk one way (the "everything drifts up" bug).
     private let sweepMomentum: Float = 70     // cells/s per (uv/s) of sweep
     private let sweepCap: Float = 90          // cells/s
+    // Volume source strength. Mostly φ-gated (floating foam pushes the surface;
+    // plunging milk spreads its volume at depth, so only a thin 0.1 floor
+    // survives). Tuning history: 80 with a hard φ gate only pushed near-field
+    // (existing patterns unmoved); 220, and 120 with a 0.3 floor, whitewashed
+    // the disc under a sustained pour by advecting dye everywhere.
+    private let displacementScale: Float = 110
 
     // Ignore samples older than this vs. now (mirrors the Sensor layer's grace).
     private let freshness: TimeInterval = 0.15
@@ -103,7 +109,8 @@ final class SimulationController: ObservableObject {
                     point: CupSpace.clampToCup(sample.uv),
                     radius: baseRadius + flowRadius * qn,
                     dye: derived.phi * qn * dyePerSecond * dt,
-                    momentum: momentum
+                    momentum: momentum,
+                    displacement: displacementScale * qn * (0.1 + 0.9 * derived.phi)
                 ))
                 level.add(volumeMl: derived.flowMlPerSec * dt)
             }

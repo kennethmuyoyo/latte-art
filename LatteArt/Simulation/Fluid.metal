@@ -66,6 +66,26 @@ kernel void k_divergence(texture2d<float, access::read>  vel [[texture(0)]],
     div.write(float4(0.5 * ((R - L) + (T - B)), 0, 0, 0), gid);
 }
 
+// Volume source: new foam occupies area, so the surface must move aside.
+// Injecting outward velocity directly would be erased by the projection
+// (it removes divergence); instead we bias the divergence INPUT — the
+// solver then leaves real +S divergence in the field, a self-consistent
+// outward source whose flow shape the pressure solve derives itself.
+kernel void k_divergenceSource(texture2d<float, access::read>  div [[texture(0)]],
+                               texture2d<float, access::write> out [[texture(1)]],
+                               constant float2 &pt     [[buffer(0)]],
+                               constant float  &radius [[buffer(1)]],
+                               constant float  &amount [[buffer(2)]],
+                               uint2 gid [[thread_position_in_grid]])
+{
+    uint w = out.get_width(), h = out.get_height();
+    if (gid.x >= w || gid.y >= h) return;
+    float2 uv = (float2(gid) + 0.5) / float2(w, h);
+    float2 d = uv - pt;
+    float g = exp(-dot(d, d) / (radius * radius));
+    out.write(div.read(gid) - float4(amount * g, 0, 0, 0), gid);
+}
+
 kernel void k_jacobi(texture2d<float, access::read>  p    [[texture(0)]],
                      texture2d<float, access::read>  div  [[texture(1)]],
                      texture2d<float, access::write> pOut [[texture(2)]],

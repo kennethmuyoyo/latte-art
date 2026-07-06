@@ -17,3 +17,11 @@
 // Physics decisions (the tilt→flow curve, the float-vs-sink Froude gate) live
 // HERE, not in Sensor. Coordinates are `CupSpace`: cup center (0.5,0.5), rim =
 // radius 0.5, UV y-down; the sim texture maps 1:1 onto that square.
+//
+// Deferred (decided 2026-07-03):
+//   - MacCormack/BFECC advection — do IF thin rosetta lines don't survive the
+//     real-rig test (numerical diffusion erases them).
+//   - Render-side dye sharpening — cosmetic only; consider after the physics is
+//     final, never before (it masks real blur).
+//   - Two-phase (VOF/level-set) foam — rejected: research-grade cost; single-phase
+//     + displacement source approximates the training-relevant behavior.
