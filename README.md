@@ -14,13 +14,14 @@ An iOS app that utilizes MetalKit, Vision, CoreGraphics, and ARKit to calculate 
 6. Real-time visual feedback indicates if the pour is on track or missing the pattern.
 
 ### Present Your Team
-
-Adit - UX/UI and Domain Knowledge
-Charisa - UX/UX design
-Samuel - Simulation Layer
-Elliezer - Presentation LAyer
-Ken - Sensor Layer
 ---
+
+- Adit - UX/UI and Domain Knowledge
+- Charisa - UX/UX design
+- Samuel - Simulation Layer
+- Elliezer - Presentation LAyer
+- Ken - Sensor Layer
+
 
 ## Starting Assumption
 
@@ -30,7 +31,7 @@ We assumed we would use ARKit's newest `trackingObjects` API and Create ML's "Ex
 
 **Because:** It sounded like the most native, advanced Apple way to solve the problem. Apple showcased 3D object tracking at WWDC, and we assumed that by feeding a 3D model of our pitcher into Create ML, ARKit would magically know its position, tilt, and height, which we could then feed into our Metal physics simulation.
 
----
+
 
 ## The Exploration Log
 
@@ -50,7 +51,7 @@ We assumed we would use ARKit's newest `trackingObjects` API and Create ML's "Ex
 - **The Reflection Problem:** Computer vision SLAM algorithms fundamentally fail on reflective surfaces. A shiny stainless steel milk pitcher reflects the room around it. As the pitcher moves, the "features" (reflections) move, causing ML models to instantly lose track of the object.
 - **The Liquid Tracking Problem:** Standard LiDAR/depth mapping passes straight through transparent water, meaning ARKit cannot natively tell us where the surface of the liquid is inside the cup.
 
----
+
 
 ## What We Tried and Dropped
 
@@ -65,7 +66,6 @@ We assumed we would use ARKit's newest `trackingObjects` API and Create ML's "Ex
 
 **We dropped it because:** Hand tracking infers the spout's location through an unknown grip, which adds a highly variable error term. A hand grip changes drastically from person to person (and pour to pour). We need to rigidly track the object itself, not infer its position through a noisy proxy.
 
----
 
 ## Real Limitations Hit
 
@@ -91,9 +91,8 @@ We placed 3 AprilTags on the rim/base.
 
 By applying the geometric circumcircle formula to the (X,Y,Z) coordinates of the three tags, we calculate the exact center and radius of the cup. Furthermore, the cross-product of these three points yields the normal vector of the cup's opening. By cross-referencing this plane with the iPhone's absolute gravity vector (via the IMU), we can mathematically calculate and render the horizontal water plane as the cup tilts, completely bypassing the need for depth-sensing hardware.
 
-**Physical setup:** the actual tags to print, their fixed IDs/sizes, and exact mounting positions for both the cup and the pitcher are in [`docs/tags/PLACEMENT.md`](docs/tags/PLACEMENT.md) — print [`docs/tags/print_sheet.png`](docs/tags/print_sheet.png) at 100% scale.
+**Physical setup:** the actual tags to print, their fixed IDs/sizes, and exact mounting positions for both the cup and the pitcher are in [`docs/tags/PLACEMENT.md`](docs/tags/PLACEMENT.md) — print [`docs/tags/print_sheet.pdf`](docs/tags/print_sheet.pdf) at 100% scale.
 
----
 
 ## The Revised Decision
 
@@ -105,7 +104,6 @@ By applying the geometric circumcircle formula to the (X,Y,Z) coordinates of the
 
 **The Dependency Trade-Off:** We consciously traded an "unreleased Beta OS dependency" for a "third-party C-library dependency" (the AprilRobotics C library wrapped into Swift). This is a strategic win: we depend on a mature, stable, open-source library that runs flawlessly on current, stable iOS versions rather than waiting on experimental frameworks that may break our app.
 
----
 
 ## App Track Addendum
 
@@ -127,7 +125,6 @@ We decided to localized the setup instructions into English since coffee is univ
 
 The app absolutely requires Camera access to track the AprilTags and run the AR session. If the user denies camera permission, the app fundamentally cannot function. We handle this by displaying a dedicated onboarding screen explaining why the camera is needed. No video feeds or images are ever recorded, saved, or sent off-device; all Vision processing happens strictly locally in real-time.
 
----
 
 ## Annex: Team Roles & Responsibilities
 
