@@ -11,8 +11,8 @@ enum AprilTagRoles {
     static let pitcherSpoutID = 10
     static let pitcherBackID = 11
 
-    static var cupTagSizeMeters: Double = 0.024
-    static var pitcherTagSizeMeters: Double = 0.024
+    static var cupTagSizeMeters: Double = 0.014
+    static var pitcherTagSizeMeters: Double = 0.014
 }
 
 /// Runs AprilTag detection + pose estimation against each ARFrame and reports

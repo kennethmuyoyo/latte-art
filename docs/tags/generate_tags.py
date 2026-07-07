@@ -13,9 +13,9 @@ Usage:
 
 Requires: Pillow (`pip3 install pillow`).
 Outputs into this directory:
-    tag_0.png, tag_1.png, tag_2.png   (cup, IDs 0/1/2)
-    tag_10.png, tag_11.png            (pitcher spout/back, IDs 10/11)
-    print_sheet.png                   (all 5 + a measurement ruler, one page)
+    tag_0.png, tag_1.png, tag_2.png   (cup, IDs 0/1/2 — single tag each)
+    tag_10.png, tag_11.png            (pitcher spout/back, IDs 10/11 — single tag each)
+    print_sheet.pdf / .png            (full A4 page, tiled with repeated copies of all 5)
 """
 import re
 import subprocess
@@ -35,13 +35,16 @@ TAG_IDS = {
 # Physical size of the OUTER BLACK BORDER edge (the 8x8-cell core), matching
 # `AprilTagRoles.cupTagSizeMeters` / `pitcherTagSizeMeters` in
 # LatteArt/Sensor/AprilTagTracker.swift. Keep these in sync.
-TAG_SIZE_MM = 24.0
+TAG_SIZE_MM = 15.0
 
-# Rendering scale: exact integer px/mm so cell boundaries land on whole
-# pixels (no antialiasing blur at tag edges, which hurts detection).
-PX_PER_MM = 12
-CELL_PX = int(TAG_SIZE_MM / 8 * PX_PER_MM)  # 24/8*12 = 36 px/cell
+# Rendering scale: chosen so TAG_SIZE_MM/8*PX_PER_MM (the per-cell pixel size)
+# lands on a whole number — no antialiasing blur at tag edges, which hurts
+# detection. 15mm tags -> 30px/cell at 16 px/mm.
+PX_PER_MM = 16
+CELL_PX = int(TAG_SIZE_MM / 8 * PX_PER_MM)
 DPI = PX_PER_MM * 25.4                      # embedded so "print at 100%" is exact
+
+A4_W_MM, A4_H_MM = 210.0, 297.0
 
 
 def find_vendored_source() -> Path:
@@ -150,77 +153,126 @@ def main():
     codes, bit_x, bit_y = load_family(src)
 
     out_dir = Path(__file__).parent
-    tiles = {}
+    raw_tiles = {}    # bare tag+quiet-zone image, for the dense A4 grid
     for name, tag_id in TAG_IDS.items():
         grid = render_tag_grid(codes[tag_id], bit_x, bit_y)
         img = render_tag_image(grid, CELL_PX)
-        label = "CUP" if tag_id < 10 else ("PITCHER SPOUT" if tag_id == 10 else "PITCHER BACK")
-        tile = add_measure_guide(img, tag_id, label)
-        path = out_dir / f"tag_{tag_id}.png"
-        tile.save(path, dpi=(DPI, DPI))
-        tiles[tag_id] = tile
-        print(f"  wrote {path.name}  ({tile.width}x{tile.height}px @ {DPI:.1f} DPI)")
+        raw_tiles[tag_id] = img
 
-    build_print_sheet(tiles, out_dir)
+        label = "CUP" if tag_id < 10 else ("PITCHER SPOUT" if tag_id == 10 else "PITCHER BACK")
+        labeled = add_measure_guide(img, tag_id, label)
+        path = out_dir / f"tag_{tag_id}.png"
+        labeled.save(path, dpi=(DPI, DPI))
+        print(f"  wrote {path.name}  ({labeled.width}x{labeled.height}px @ {DPI:.1f} DPI)")
+
+    build_print_sheet(raw_tiles, out_dir)
 
 
 def build_print_sheet(tiles, out_dir: Path):
-    """One portrait sheet: 3 cup tags, a measurement ruler, 2 pitcher tags.
-    Sized to print at 100% on both A4 and US Letter without clipping."""
-    margin = int(10 * PX_PER_MM)
-    gap = int(8 * PX_PER_MM)
-    tile_w = tiles[0].width
-    row_h = tiles[0].height
+    """A full A4 page (210x297mm), tiled edge-to-edge with repeated copies of
+    all 5 tags — one ID per row, cycling — so cutting out a whole row gives a
+    stack of identical, ready-to-mount spares instead of one single copy."""
+    def mm(x):
+        return round(x * PX_PER_MM)
 
-    title_h = int(14 * PX_PER_MM)
-    ruler_h = int(28 * PX_PER_MM)   # text + line + ticks + number labels, fits comfortably
+    margin_mm = 8.0
+    tile_core_mm = TAG_SIZE_MM * 10 / 8       # quiet-zone-inclusive tag width
+    label_h_mm = 5.0
+    tile_h_mm = tile_core_mm + label_h_mm
+    gap_mm = 4.0
 
-    sheet_w = margin * 2 + tile_w * 3 + gap * 2
-    sheet_h = margin + title_h + row_h + gap + ruler_h + gap + row_h + margin
+    header_h_mm = 8.0
+    ruler_h_mm = 16.0
+    section_gap_mm = 4.0
+    grid_top_mm = margin_mm + header_h_mm + ruler_h_mm + section_gap_mm
 
-    sheet = Image.new("RGB", (sheet_w, sheet_h), "white")
+    usable_w_mm = A4_W_MM - 2 * margin_mm
+    usable_h_mm = A4_H_MM - grid_top_mm - margin_mm
+
+    cols = int((usable_w_mm + gap_mm) // (tile_core_mm + gap_mm))
+    rows = int((usable_h_mm + gap_mm) // (tile_h_mm + gap_mm))
+
+    grid_w_mm = cols * tile_core_mm + (cols - 1) * gap_mm
+    grid_h_mm = rows * tile_h_mm + (rows - 1) * gap_mm
+    grid_left_mm = margin_mm + (usable_w_mm - grid_w_mm) / 2
+    grid_top_mm += (usable_h_mm - grid_h_mm) / 2
+
+    ids_cycle = [0, 1, 2, 10, 11]
+    role = {0: "CUP", 1: "CUP", 2: "CUP", 10: "SPOUT", 11: "BACK"}
+
+    sheet = Image.new("RGB", (mm(A4_W_MM), mm(A4_H_MM)), "white")
     draw = ImageDraw.Draw(sheet)
     try:
         font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 24)
         font_small = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 16)
+        font_tiny = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 13)
     except OSError:
-        font = font_small = ImageFont.load_default()
+        font = font_small = font_tiny = ImageFont.load_default()
 
-    draw.text((margin, margin),
-              "Latte Art — AprilTag print sheet. Print print_sheet.pdf at 100% / Actual Size "
-              "(no “fit to page”) — the ruler below is your final check.",
+    draw.text((mm(margin_mm), mm(margin_mm) - 6),
+              f"Latte Art — AprilTag print sheet (A4, tag36h11, {TAG_SIZE_MM:.0f} mm). "
+              f"Print print_sheet.pdf at 100% / Actual Size (no “fit to page”).",
               fill="black", font=font_small)
 
-    y = margin + title_h
-    for i, tid in enumerate([0, 1, 2]):
-        x = margin + i * (tile_w + gap)
-        sheet.paste(tiles[tid], (x, y))
-
-    # Measurement ruler: 0-60mm, 1mm ticks, 10mm labeled. Line sits near the
-    # top of its band; ticks + number labels hang below it.
-    y_ruler = y + row_h + gap
+    # Measurement ruler: 0-60mm, 1mm ticks, 10mm labeled.
     ruler_len_mm = 60
-    x0 = margin
-    y0 = y_ruler + int(6 * PX_PER_MM)
-    draw.text((x0, y_ruler),
-              "Verification ruler — if this does not measure exactly 60 mm after printing, "
-              "your printer rescaled the page: measured_mm / 60 × 24 mm = your true tag size.",
+    x0 = mm(margin_mm)
+    y0 = mm(margin_mm + header_h_mm + 10)
+    draw.text((x0, mm(margin_mm + header_h_mm)),
+              f"Verification ruler — must measure exactly 60 mm after printing (if not: "
+              f"measured_mm / 60 × {TAG_SIZE_MM:.0f} mm = true tag size). Cross-check against "
+              f"the magenta-outlined tile below, top-left — that square should also be "
+              f"{TAG_SIZE_MM:.0f} mm/side.",
               fill="black", font=font_small)
     draw.line([(x0, y0), (x0 + ruler_len_mm * PX_PER_MM, y0)], fill="black", width=3)
-    for mm in range(0, ruler_len_mm + 1):
-        x = x0 + mm * PX_PER_MM
-        if mm % 10 == 0:
-            draw.line([(x, y0), (x, y0 + 22)], fill="black", width=2)
-            draw.text((x - 6, y0 + 26), str(mm), fill="black", font=font_small)
-        elif mm % 5 == 0:
-            draw.line([(x, y0), (x, y0 + 14)], fill="black", width=2)
+    for t in range(0, ruler_len_mm + 1):
+        x = x0 + t * PX_PER_MM
+        if t % 10 == 0:
+            draw.line([(x, y0), (x, y0 + 18)], fill="black", width=2)
+            draw.text((x - 6, y0 + 21), str(t), fill="black", font=font_small)
+        elif t % 5 == 0:
+            draw.line([(x, y0), (x, y0 + 12)], fill="black", width=2)
         else:
-            draw.line([(x, y0), (x, y0 + 8)], fill="black", width=1)
+            draw.line([(x, y0), (x, y0 + 6)], fill="black", width=1)
 
-    y2 = y_ruler + ruler_h
-    for i, tid in enumerate([10, 11]):
-        x = margin + i * (tile_w + gap)
-        sheet.paste(tiles[tid], (x, y2))
+    # Grid: one tag ID per row, repeated across every column in that row. The
+    # very first tile gets a magenta measurement border + callout (the one
+    # spot to check with a ruler); every other tile gets a plain gray
+    # cut-guide at the same edge so scissors have a line to follow.
+    quiet_px = 1 * (tiles[ids_cycle[0]].width // 10)
+    core_px = 8 * (tiles[ids_cycle[0]].width // 10)
+
+    def cut_guide(x0, y0, x1, y1, color, width, dashed):
+        if not dashed:
+            draw.rectangle([x0, y0, x1, y1], outline=color, width=width)
+            return
+        dash = 8
+        for x in range(x0, x1, dash * 2):
+            draw.line([(x, y0), (min(x + dash, x1), y0)], fill=color, width=width)
+            draw.line([(x, y1), (min(x + dash, x1), y1)], fill=color, width=width)
+        for y in range(y0, y1, dash * 2):
+            draw.line([(x0, y), (x0, min(y + dash, y1))], fill=color, width=width)
+            draw.line([(x1, y), (x1, min(y + dash, y1))], fill=color, width=width)
+
+    for r in range(rows):
+        tag_id = ids_cycle[r % len(ids_cycle)]
+        tile = tiles[tag_id]
+        y = mm(grid_top_mm + r * (tile_h_mm + gap_mm))
+        for c in range(cols):
+            x = mm(grid_left_mm + c * (tile_core_mm + gap_mm))
+            sheet.paste(tile, (x, y))
+            draw.text((x + mm(tile_core_mm) // 2, y + mm(tile_core_mm) + 2),
+                      f"ID {tag_id} · {role[tag_id]}", fill=(90, 90, 90),
+                      font=font_tiny, anchor="ma")
+            gx0, gy0 = x + quiet_px - 1, y + quiet_px - 1
+            gx1, gy1 = x + quiet_px + core_px, y + quiet_px + core_px
+            if r == 0 and c == 0:
+                cut_guide(gx0, gy0, gx1, gy1, (220, 0, 220), 2, dashed=True)
+            else:
+                cut_guide(gx0, gy0, gx1, gy1, (210, 210, 210), 1, dashed=True)
+
+    print(f"  grid: {cols} cols x {rows} rows = {cols*rows} tags "
+          f"({', '.join(f'{ids_cycle[r % 5]}×{cols}' for r in range(rows))})")
 
     path = out_dir / "print_sheet.png"
     sheet.save(path, dpi=(DPI, DPI))
