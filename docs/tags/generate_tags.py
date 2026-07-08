@@ -29,17 +29,17 @@ except ImportError:
 
 TAG_IDS = {
     "cup_0": 0, "cup_1": 1, "cup_2": 2,
-    "pitcher_spout_10": 10, "pitcher_back_11": 11,
+    "pitcher_spout_10": 10, "pitcher_back_11": 11, "pitcher_opposite_12": 12,
 }
 
 # Physical size of the OUTER BLACK BORDER edge (the 8x8-cell core), matching
 # `AprilTagRoles.cupTagSizeMeters` / `pitcherTagSizeMeters` in
 # LatteArt/Sensor/AprilTagTracker.swift. Keep these in sync.
-TAG_SIZE_MM = 15.0
+TAG_SIZE_MM = 14.0
 
 # Rendering scale: chosen so TAG_SIZE_MM/8*PX_PER_MM (the per-cell pixel size)
 # lands on a whole number — no antialiasing blur at tag edges, which hurts
-# detection. 15mm tags -> 30px/cell at 16 px/mm.
+# detection. 14mm tags -> 28px/cell at 16 px/mm.
 PX_PER_MM = 16
 CELL_PX = int(TAG_SIZE_MM / 8 * PX_PER_MM)
 DPI = PX_PER_MM * 25.4                      # embedded so "print at 100%" is exact
@@ -159,7 +159,14 @@ def main():
         img = render_tag_image(grid, CELL_PX)
         raw_tiles[tag_id] = img
 
-        label = "CUP" if tag_id < 10 else ("PITCHER SPOUT" if tag_id == 10 else "PITCHER BACK")
+        if tag_id < 10:
+            label = "CUP"
+        elif tag_id == 10:
+            label = "PITCHER SPOUT"
+        elif tag_id == 11:
+            label = "PITCHER SIDE (90°)"
+        else:
+            label = "PITCHER OPPOSITE (180°)"
         labeled = add_measure_guide(img, tag_id, label)
         path = out_dir / f"tag_{tag_id}.png"
         labeled.save(path, dpi=(DPI, DPI))
@@ -197,8 +204,8 @@ def build_print_sheet(tiles, out_dir: Path):
     grid_left_mm = margin_mm + (usable_w_mm - grid_w_mm) / 2
     grid_top_mm += (usable_h_mm - grid_h_mm) / 2
 
-    ids_cycle = [0, 1, 2, 10, 11]
-    role = {0: "CUP", 1: "CUP", 2: "CUP", 10: "SPOUT", 11: "BACK"}
+    ids_cycle = [0, 1, 2, 10, 11, 12]
+    role = {0: "CUP", 1: "CUP", 2: "CUP", 10: "SPOUT", 11: "SIDE90", 12: "OPP180"}
 
     sheet = Image.new("RGB", (mm(A4_W_MM), mm(A4_H_MM)), "white")
     draw = ImageDraw.Draw(sheet)
@@ -272,7 +279,7 @@ def build_print_sheet(tiles, out_dir: Path):
                 cut_guide(gx0, gy0, gx1, gy1, (210, 210, 210), 1, dashed=True)
 
     print(f"  grid: {cols} cols x {rows} rows = {cols*rows} tags "
-          f"({', '.join(f'{ids_cycle[r % 5]}×{cols}' for r in range(rows))})")
+          f"({', '.join(f'{ids_cycle[r % len(ids_cycle)]}×{cols}' for r in range(rows))})")
 
     path = out_dir / "print_sheet.png"
     sheet.save(path, dpi=(DPI, DPI))

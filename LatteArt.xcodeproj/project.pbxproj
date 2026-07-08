@@ -9,21 +9,33 @@
 /* Begin PBXBuildFile section */
 		0DED854D1111023DCD238E07 /* Simulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4565DF4FB938A635EFFBE95B /* Simulation.swift */; };
 		104124D834860B2BE50B476F /* AprilTagTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFCBB9B8F001EA627BC95663 /* AprilTagTracker.swift */; };
+		13B1AA0014414ED17CF83ED0 /* PatternGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78F7906E625454812D456C23 /* PatternGuide.swift */; };
 		1F64563BF90338E258BC6F15 /* TouchPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB9F8841417BDD1BFB5FC5BD /* TouchPourSource.swift */; };
 		1FAE06514B11EC40A72FFF09 /* CameraPourView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABDB3DE8EFA76EEAB0E8CB5 /* CameraPourView.swift */; };
+		22A9E52A07353654908852BA /* PourStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA2D02CC5B9F29D18E4082AC /* PourStep.swift */; };
+		2A2ECC8954EBBC8D2BAB0C67 /* Phase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20405633A1B2F5E9574AA51 /* Phase.swift */; };
 		2C8A23722A97F06E6E9EAAB3 /* MetalContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 292D024373573DA5136313C9 /* MetalContext.swift */; };
 		3417339CF97DC7EF06700278 /* Fluid.metal in Sources */ = {isa = PBXBuildFile; fileRef = 449C8C8FEEE6C3AD5E221A29 /* Fluid.metal */; };
 		36B6DB15C0D640A538FF1EEF /* LevelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 699FEAF82B28EE704F49B4E7 /* LevelModel.swift */; };
+		3CCD8A0C64607C084D301168 /* PreGuideView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09F1420B107272B82263FDCF /* PreGuideView.swift */; };
 		3D7A132C363EF978D6F11251 /* SwiftAprilTag in Frameworks */ = {isa = PBXBuildFile; productRef = 14D600C4B18F2C4F11E4B221 /* SwiftAprilTag */; };
+		40AD6E5CF3A73F82B131734D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B05DD7750BC1543370EA603E /* Assets.xcassets */; };
+		4EC52C982331F6DEC7EDD653 /* AppFlowModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA45DCEF0741D257D6F7D9EE /* AppFlowModel.swift */; };
 		59F562EEA9244D9AD5AA7E62 /* PourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8028DBAF1675F96CBA7A3F57 /* PourSource.swift */; };
 		5DDCDF100D65B266D0C2DB31 /* AprilTagPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957D4D9E9A9E5DF9DE08C16C /* AprilTagPourSource.swift */; };
 		5F5EB05BF9B994701BC6BAD0 /* SimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF9C542197790D8D2EA6A51 /* SimulationController.swift */; };
+		60D5B477AF7DD47F4F7CCB12 /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D003D27F9282EEC3942956 /* SetupView.swift */; };
 		6B210F612C605631B67B98CE /* PourPhysics.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF962E3E372531135978BBB2 /* PourPhysics.swift */; };
 		6E8B766BDEAE945ED98DCD06 /* FluidSimulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7C6EBB152DE8E8CF31652E3 /* FluidSimulation.swift */; };
+		7196691A2B9D5A649AED7375 /* PracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB7DCE5EA00012E1318FD87 /* PracticeView.swift */; };
 		94F05AFE2A7F914BA7BCE86C /* PourSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C9554692626962B308BBAA8 /* PourSample.swift */; };
+		9650D5A18649F2592A1EC7CE /* PatternLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CE79BE18C1450059F929CFE /* PatternLibrary.swift */; };
 		9E7BD0EE162D508F90D0A989 /* AutoPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB71FF277E0EC685F1CEA8C /* AutoPourSource.swift */; };
+		A764BD63B0C52CF309F0432F /* AppFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 950794DC017763C95DA85375 /* AppFlowView.swift */; };
 		AF9FCE3EC606D5A4100CCEEF /* CupGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C291F27E3B9B0B80AA8953 /* CupGeometry.swift */; };
+		BB356EFBC3997B6D76E58CF0 /* PatternSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC4F9C5A22F0F71C6EB313D /* PatternSelectView.swift */; };
 		C497D7165553E67D93C66E24 /* FluidBlitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF53703869803CDDD9E92F83 /* FluidBlitter.swift */; };
+		C59174FD74A81872148B609F /* CalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33B2D5BB432C36EF74FACB4E /* CalibrationView.swift */; };
 		D2BB56BF4C76F28B49CD69D0 /* LatteArtApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0478823C1B679BE388CE618 /* LatteArtApp.swift */; };
 		D5A5325BBC35F3C7AA19C92C /* SimulationDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18B9B398D1F4B46FEE1F0FF4 /* SimulationDebugView.swift */; };
 		ED4FBD89F718E5B1D7F6F5F2 /* CupSpace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10BBBCB6BFD6F38F85206525 /* CupSpace.swift */; };
@@ -31,18 +43,29 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		09F1420B107272B82263FDCF /* PreGuideView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreGuideView.swift; sourceTree = "<group>"; };
 		10BBBCB6BFD6F38F85206525 /* CupSpace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupSpace.swift; sourceTree = "<group>"; };
+		11D003D27F9282EEC3942956 /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupView.swift; sourceTree = "<group>"; };
 		18B9B398D1F4B46FEE1F0FF4 /* SimulationDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationDebugView.swift; sourceTree = "<group>"; };
 		292D024373573DA5136313C9 /* MetalContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalContext.swift; sourceTree = "<group>"; };
 		2AB71FF277E0EC685F1CEA8C /* AutoPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoPourSource.swift; sourceTree = "<group>"; };
+		33B2D5BB432C36EF74FACB4E /* CalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationView.swift; sourceTree = "<group>"; };
 		3C9554692626962B308BBAA8 /* PourSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourSample.swift; sourceTree = "<group>"; };
 		449C8C8FEEE6C3AD5E221A29 /* Fluid.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Fluid.metal; sourceTree = "<group>"; };
 		4565DF4FB938A635EFFBE95B /* Simulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulation.swift; sourceTree = "<group>"; };
+		4EC4F9C5A22F0F71C6EB313D /* PatternSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternSelectView.swift; sourceTree = "<group>"; };
+		5CE79BE18C1450059F929CFE /* PatternLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternLibrary.swift; sourceTree = "<group>"; };
 		699FEAF82B28EE704F49B4E7 /* LevelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelModel.swift; sourceTree = "<group>"; };
+		78F7906E625454812D456C23 /* PatternGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternGuide.swift; sourceTree = "<group>"; };
 		8028DBAF1675F96CBA7A3F57 /* PourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourSource.swift; sourceTree = "<group>"; };
+		950794DC017763C95DA85375 /* AppFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowView.swift; sourceTree = "<group>"; };
 		957D4D9E9A9E5DF9DE08C16C /* AprilTagPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AprilTagPourSource.swift; sourceTree = "<group>"; };
 		9838B2BCDB97181740403476 /* LatteArt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LatteArt.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B05DD7750BC1543370EA603E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B20405633A1B2F5E9574AA51 /* Phase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Phase.swift; sourceTree = "<group>"; };
 		BABDB3DE8EFA76EEAB0E8CB5 /* CameraPourView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPourView.swift; sourceTree = "<group>"; };
+		CA45DCEF0741D257D6F7D9EE /* AppFlowModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowModel.swift; sourceTree = "<group>"; };
+		CEB7DCE5EA00012E1318FD87 /* PracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeView.swift; sourceTree = "<group>"; };
 		CFCBB9B8F001EA627BC95663 /* AprilTagTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AprilTagTracker.swift; sourceTree = "<group>"; };
 		D0478823C1B679BE388CE618 /* LatteArtApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LatteArtApp.swift; sourceTree = "<group>"; };
 		D6F5F7158BDD961611FEC382 /* CupPose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupPose.swift; sourceTree = "<group>"; };
@@ -50,6 +73,7 @@
 		DB9F8841417BDD1BFB5FC5BD /* TouchPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchPourSource.swift; sourceTree = "<group>"; };
 		DF53703869803CDDD9E92F83 /* FluidBlitter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FluidBlitter.swift; sourceTree = "<group>"; };
 		DFF9C542197790D8D2EA6A51 /* SimulationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationController.swift; sourceTree = "<group>"; };
+		EA2D02CC5B9F29D18E4082AC /* PourStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourStep.swift; sourceTree = "<group>"; };
 		F342CF367C5890C6B5D7BE01 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		F7C6EBB152DE8E8CF31652E3 /* FluidSimulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FluidSimulation.swift; sourceTree = "<group>"; };
 		FF962E3E372531135978BBB2 /* PourPhysics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourPhysics.swift; sourceTree = "<group>"; };
@@ -94,6 +118,7 @@
 		5415EC95E0C6F7FE58AB391A /* LatteArt */ = {
 			isa = PBXGroup;
 			children = (
+				B05DD7750BC1543370EA603E /* Assets.xcassets */,
 				F342CF367C5890C6B5D7BE01 /* Info.plist */,
 				5AAF5CD0D31BAF1F724E52BC /* Presentation */,
 				41084BFB585BE5AF23C7D6C6 /* Sensor */,
@@ -105,8 +130,19 @@
 		5AAF5CD0D31BAF1F724E52BC /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				CA45DCEF0741D257D6F7D9EE /* AppFlowModel.swift */,
+				950794DC017763C95DA85375 /* AppFlowView.swift */,
+				33B2D5BB432C36EF74FACB4E /* CalibrationView.swift */,
 				BABDB3DE8EFA76EEAB0E8CB5 /* CameraPourView.swift */,
 				D0478823C1B679BE388CE618 /* LatteArtApp.swift */,
+				78F7906E625454812D456C23 /* PatternGuide.swift */,
+				5CE79BE18C1450059F929CFE /* PatternLibrary.swift */,
+				4EC4F9C5A22F0F71C6EB313D /* PatternSelectView.swift */,
+				B20405633A1B2F5E9574AA51 /* Phase.swift */,
+				EA2D02CC5B9F29D18E4082AC /* PourStep.swift */,
+				CEB7DCE5EA00012E1318FD87 /* PracticeView.swift */,
+				09F1420B107272B82263FDCF /* PreGuideView.swift */,
+				11D003D27F9282EEC3942956 /* SetupView.swift */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
@@ -143,6 +179,7 @@
 			buildConfigurationList = 385FD628E768769173D7BA0E /* Build configuration list for PBXNativeTarget "LatteArt" */;
 			buildPhases = (
 				15948703886E23AE64F37998 /* Sources */,
+				95FE0330A98E65CEFED7D9B5 /* Resources */,
 				5B84D190CB9681EA48FCA70A /* Frameworks */,
 			);
 			buildRules = (
@@ -188,14 +225,28 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		95FE0330A98E65CEFED7D9B5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				40AD6E5CF3A73F82B131734D /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		15948703886E23AE64F37998 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4EC52C982331F6DEC7EDD653 /* AppFlowModel.swift in Sources */,
+				A764BD63B0C52CF309F0432F /* AppFlowView.swift in Sources */,
 				5DDCDF100D65B266D0C2DB31 /* AprilTagPourSource.swift in Sources */,
 				104124D834860B2BE50B476F /* AprilTagTracker.swift in Sources */,
 				9E7BD0EE162D508F90D0A989 /* AutoPourSource.swift in Sources */,
+				C59174FD74A81872148B609F /* CalibrationView.swift in Sources */,
 				1FAE06514B11EC40A72FFF09 /* CameraPourView.swift in Sources */,
 				AF9FCE3EC606D5A4100CCEEF /* CupGeometry.swift in Sources */,
 				F7512B110534827A1A8DA2FA /* CupPose.swift in Sources */,
@@ -206,9 +257,17 @@
 				D2BB56BF4C76F28B49CD69D0 /* LatteArtApp.swift in Sources */,
 				36B6DB15C0D640A538FF1EEF /* LevelModel.swift in Sources */,
 				2C8A23722A97F06E6E9EAAB3 /* MetalContext.swift in Sources */,
+				13B1AA0014414ED17CF83ED0 /* PatternGuide.swift in Sources */,
+				9650D5A18649F2592A1EC7CE /* PatternLibrary.swift in Sources */,
+				BB356EFBC3997B6D76E58CF0 /* PatternSelectView.swift in Sources */,
+				2A2ECC8954EBBC8D2BAB0C67 /* Phase.swift in Sources */,
 				6B210F612C605631B67B98CE /* PourPhysics.swift in Sources */,
 				94F05AFE2A7F914BA7BCE86C /* PourSample.swift in Sources */,
 				59F562EEA9244D9AD5AA7E62 /* PourSource.swift in Sources */,
+				22A9E52A07353654908852BA /* PourStep.swift in Sources */,
+				7196691A2B9D5A649AED7375 /* PracticeView.swift in Sources */,
+				3CCD8A0C64607C084D301168 /* PreGuideView.swift in Sources */,
+				60D5B477AF7DD47F4F7CCB12 /* SetupView.swift in Sources */,
 				0DED854D1111023DCD238E07 /* Simulation.swift in Sources */,
 				5F5EB05BF9B994701BC6BAD0 /* SimulationController.swift in Sources */,
 				D5A5325BBC35F3C7AA19C92C /* SimulationDebugView.swift in Sources */,
@@ -284,9 +343,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = YQ299RVZTY;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = L6599J28A4;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LatteArt/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -294,8 +352,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.pourfect;
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.signvrse.latteart;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -373,9 +430,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = YQ299RVZTY;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = L6599J28A4;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LatteArt/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -383,8 +439,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.pourfect;
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.signvrse.latteart;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

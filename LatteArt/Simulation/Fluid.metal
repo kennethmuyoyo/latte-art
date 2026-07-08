@@ -137,36 +137,53 @@ kernel void k_dampVelocity(texture2d<float, access::read>  vel [[texture(0)]],
 
 // ---- display: dye texture -> latte surface (brown canvas, white milk) ----
 //
-// The quad is placed by CupPose (via CupQuadUniforms) so it maps 1:1 onto the
-// on-screen cup ellipse; the compositor / blitter alpha-blends the result over
-// whatever is behind it (dark grey in the debug harness, the camera later).
+// The quad is placed by CupPose (via CupVertex, computed in FluidBlitter) so
+// it maps 1:1 onto the on-screen cup ellipse; the compositor / blitter
+// alpha-blends the result over whatever is behind it (dark grey in the debug
+// harness, the camera later).
 
-struct CupQuadUniforms {
-    float2 centerNDC;   // cup center in clip space
-    float2 axes;        // half-extents applied to the ±1 corner offsets (already NDC-scaled)
-    float  angle;       // rotation of the cup ellipse, radians
+// Placement math (recovering isotropic pixels, scaling, rotating, and only
+// THEN converting to anisotropic clip space) happens in Swift — see
+// FluidBlitter.cupQuadVertices. Rotating a quad that's already been scaled
+// into clip space is only correct when the viewport is square; a full-screen
+// portrait view isn't, so that math has to happen in real pixels first. The
+// shader just places the 4 corners it's given.
+struct CupVertex {
+    float2 posNDC;
+    float2 uv;
 };
 
 struct VOut { float4 pos [[position]]; float2 uv; };
 
 vertex VOut v_cupQuad(uint vid [[vertex_id]],
-                      constant CupQuadUniforms &u [[buffer(0)]])
+                      constant CupVertex *verts [[buffer(0)]])
 {
-    float2 corner[4] = { float2(-1, -1), float2(1, -1), float2(-1, 1), float2(1, 1) };
-    float2 c = corner[vid];
-    // scale by axes, rotate by angle, translate to centerNDC
-    float2 s = float2(c.x * u.axes.x, c.y * u.axes.y);
-    float ca = cos(u.angle), sa = sin(u.angle);
-    float2 r = float2(s.x * ca - s.y * sa, s.x * sa + s.y * ca);
     VOut o;
-    o.pos = float4(u.centerNDC + r, 0, 1);
-    o.uv = c * 0.5 + 0.5;
-    o.uv.y = 1.0 - o.uv.y;
+    o.pos = float4(verts[vid].posNDC, 0, 1);
+    o.uv = verts[vid].uv;
     return o;
 }
 
+// `in.uv` is already in CupSpace UV terms (center 0.5,0.5, rim at 0.5) — the
+// quad is placed to map its [0,1] square 1:1 onto the cup, same convention
+// the dye texture sample above already relies on.
+//
+// Both slots are REAL depth-tested on the Swift side before being marked
+// active (CameraPourCoordinator: ray-cast from the camera through the tag to
+// the cup's actual tracked plane, compare that intersection's distance from
+// the camera against the tag's own known distance) — a slot is only active
+// when the pitcher tag is genuinely closer to the camera than the cup
+// surface is at that screen location, not just "whenever a tag is visible".
+// Radius is the tag's real physical size (AprilTagRoles.pitcherTagSizeMeters)
+// projected into cup-UV units, not a guessed constant.
+struct OcclusionUniform {
+    float2 uv0;   float radius0;   float active0;
+    float2 uv1;   float radius1;   float active1;
+};
+
 fragment float4 f_latte(VOut in [[stage_in]],
-                        texture2d<float> dye [[texture(0)]])
+                        texture2d<float> dye [[texture(0)]],
+                        constant OcclusionUniform &occl [[buffer(0)]])
 {
     float2 c = in.uv - 0.5;
     float r = length(c);
@@ -177,8 +194,23 @@ fragment float4 f_latte(VOut in [[stage_in]],
     // Paintable coffee disc now fills to the CupSpace rim (r = 0.5 in UV);
     // ~0.008-wide smoothstep at the edge for AA, no wall ring.
     float inside = smoothstep(0.5, 0.492, r);
+
+    // Cut a soft hole at each depth-verified-closer pitcher tag position, so
+    // the real pitcher (genuinely nearer the camera than the cup surface
+    // there) visually wins over the disc instead of the disc always drawing
+    // on top of it.
+    float occlusion = 1.0;
+    if (occl.active0 > 0.5) {
+        float dist0 = length(in.uv - occl.uv0);
+        occlusion = min(occlusion, smoothstep(occl.radius0 * 0.7, occl.radius0, dist0));
+    }
+    if (occl.active1 > 0.5) {
+        float dist1 = length(in.uv - occl.uv1);
+        occlusion = min(occlusion, smoothstep(occl.radius1 * 0.7, occl.radius1, dist1));
+    }
+
     // Alpha carries coverage so the blitter (sourceAlpha/oneMinusSourceAlpha)
-    // composites the disc over anything and leaves the outside untouched —
-    // outside the disc this is (0,0,0,0), i.e. fully transparent.
-    return float4(latte, inside);
+    // composites the disc over anything and leaves the outside (and now the
+    // pitcher's hole) untouched — fully transparent there.
+    return float4(latte, inside * occlusion);
 }

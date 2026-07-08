@@ -1,22 +1,24 @@
 import SwiftUI
 
 // ============================================================================
-// TEMPORARY ENTRY POINT.
-//
-// On device: `CameraPourView` — the real integration path (AprilTag pitcher/cup
-// tracking → PourSample → physics → fluid → composited on the live camera).
-// In the Simulator: there's no camera/ARKit, so fall back to `SimulationDebugView`
-// (touch / scripted pour) to exercise the Simulation layer on its own.
-// Revert to the real Presentation root when the UI layer (Ellie) lands.
+// On device: `AppFlowView` — the real onboarding → calibration → pattern
+// select → coached practice flow, backed by `AppFlowModel`.
+// In the Simulator: there's no camera/ARKit, so fall back to
+// `SimulationDebugView` (touch / scripted pour) to exercise the Simulation
+// layer on its own.
 // ============================================================================
 @main
 struct LatteArtApp: App {
+    #if !targetEnvironment(simulator)
+    @StateObject private var model = AppFlowModel()
+    #endif
+
     var body: some Scene {
         WindowGroup {
             #if targetEnvironment(simulator)
             SimulationDebugView()
             #else
-            CameraPourView()
+            AppFlowView(model: model)
             #endif
         }
     }

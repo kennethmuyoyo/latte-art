@@ -32,6 +32,15 @@ final class SimulationController: ObservableObject {
     /// The dye texture to display this frame.
     var dyeTexture: MTLTexture { sim.dyeTexture }
 
+    /// Fires once per `advance()` call with `dt` and the fresh sample this
+    /// frame acted on (post freshness-gate), or `nil` if there wasn't one.
+    /// For Presentation-layer coaching logic (matching the live pour against
+    /// a target pattern) that needs the raw per-frame sample — the
+    /// `@Published` stats above are throttled to ~12 Hz for display and don't
+    /// carry the sample itself. Purely additive; doesn't change existing
+    /// behavior for anything that doesn't set it.
+    var onAdvance: ((Float, PourSample?) -> Void)?
+
     // Push-based input. We keep a strong ref to the source and cache its latest
     // sample; `advance` gates on freshness so a stale sample can't keep pouring.
     private var source: PourSource?
@@ -88,8 +97,10 @@ final class SimulationController: ObservableObject {
         var s = SimStats()
 
         // Freshness gate: only pour on a sample newer than `freshness`.
-        if let sample = latestSample,
-           CACurrentMediaTime() - sample.time <= freshness {
+        let freshSample: PourSample? = latestSample.flatMap { sample in
+            CACurrentMediaTime() - sample.time <= freshness ? sample : nil
+        }
+        if let sample = freshSample {
             let derived = physics.derive(from: sample,
                                          surfaceDepthBelowRim: level.surfaceDepthBelowRimMeters)
             s = SimStats(phi: derived.phi, froude: derived.froude,
@@ -122,6 +133,7 @@ final class SimulationController: ObservableObject {
             sim.reset(in: cb)
         }
         sim.step(dt: dt, in: cb)
+        onAdvance?(dt, freshSample)
 
         // Publish HUD readouts at ~12 Hz, not 60 — they're display-only.
         frame += 1
