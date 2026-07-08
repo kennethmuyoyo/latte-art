@@ -8,24 +8,37 @@
 
 /* Begin PBXBuildFile section */
 		0DED854D1111023DCD238E07 /* Simulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4565DF4FB938A635EFFBE95B /* Simulation.swift */; };
+		0E86EC469AC08E3B84769E7D /* Pattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9E29624AC80063988808AB /* Pattern.swift */; };
+		0FBD305A33E67C10A6A0799D /* CameraStage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F56A1750503A7F46311A8CE /* CameraStage.swift */; };
 		104124D834860B2BE50B476F /* AprilTagTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFCBB9B8F001EA627BC95663 /* AprilTagTracker.swift */; };
+		10BB394EDFBF907C7855C92F /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C6FC1EC9D377DE2EDC2EAD /* Theme.swift */; };
 		1F64563BF90338E258BC6F15 /* TouchPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB9F8841417BDD1BFB5FC5BD /* TouchPourSource.swift */; };
-		1FAE06514B11EC40A72FFF09 /* CameraPourView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABDB3DE8EFA76EEAB0E8CB5 /* CameraPourView.swift */; };
+		20E3EC72F87DD88DAA4ADF7A /* ResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E12F47B12066FC548A52B6 /* ResultView.swift */; };
 		2C8A23722A97F06E6E9EAAB3 /* MetalContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 292D024373573DA5136313C9 /* MetalContext.swift */; };
+		2F7D8D035F15B139C209D353 /* CalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85E3B3BA57FF42AEF046DB3D /* CalibrationView.swift */; };
 		3417339CF97DC7EF06700278 /* Fluid.metal in Sources */ = {isa = PBXBuildFile; fileRef = 449C8C8FEEE6C3AD5E221A29 /* Fluid.metal */; };
 		36B6DB15C0D640A538FF1EEF /* LevelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 699FEAF82B28EE704F49B4E7 /* LevelModel.swift */; };
 		3D7A132C363EF978D6F11251 /* SwiftAprilTag in Frameworks */ = {isa = PBXBuildFile; productRef = 14D600C4B18F2C4F11E4B221 /* SwiftAprilTag */; };
 		59F562EEA9244D9AD5AA7E62 /* PourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8028DBAF1675F96CBA7A3F57 /* PourSource.swift */; };
 		5DDCDF100D65B266D0C2DB31 /* AprilTagPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957D4D9E9A9E5DF9DE08C16C /* AprilTagPourSource.swift */; };
 		5F5EB05BF9B994701BC6BAD0 /* SimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF9C542197790D8D2EA6A51 /* SimulationController.swift */; };
+		683E9479D80452159B1E6A44 /* BeforePracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D64FD80135E73B52570638C0 /* BeforePracticeView.swift */; };
 		6B210F612C605631B67B98CE /* PourPhysics.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF962E3E372531135978BBB2 /* PourPhysics.swift */; };
 		6E8B766BDEAE945ED98DCD06 /* FluidSimulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7C6EBB152DE8E8CF31652E3 /* FluidSimulation.swift */; };
 		94F05AFE2A7F914BA7BCE86C /* PourSample.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C9554692626962B308BBAA8 /* PourSample.swift */; };
+		9526D89FC005187362ED5EA5 /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C010636B448BA307E1689A69 /* SetupView.swift */; };
 		9E7BD0EE162D508F90D0A989 /* AutoPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AB71FF277E0EC685F1CEA8C /* AutoPourSource.swift */; };
 		AF9FCE3EC606D5A4100CCEEF /* CupGeometry.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C291F27E3B9B0B80AA8953 /* CupGeometry.swift */; };
+		BEE52852984BDCEBB07EED95 /* GuidanceCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD5CA3D207A9B50AAB68E451 /* GuidanceCanvas.swift */; };
+		C3456C39B59CBA76BDFA21D4 /* PracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5166D096E7A0A967631E6297 /* PracticeView.swift */; };
 		C497D7165553E67D93C66E24 /* FluidBlitter.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF53703869803CDDD9E92F83 /* FluidBlitter.swift */; };
+		C7780B6390DAD6D34F64EB30 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C141F5E39B86BDF28AC397 /* RootView.swift */; };
 		D2BB56BF4C76F28B49CD69D0 /* LatteArtApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0478823C1B679BE388CE618 /* LatteArtApp.swift */; };
 		D5A5325BBC35F3C7AA19C92C /* SimulationDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18B9B398D1F4B46FEE1F0FF4 /* SimulationDebugView.swift */; };
+		D68EC3C3E584CA4EE9B5D469 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B29A13FE8EB56D544F0F9878 /* SplashView.swift */; };
+		DC14B241A5FB6C4A0CD66F5A /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = D66787CBCCB27E792681F056 /* Components.swift */; };
+		E6BEA3D34CBB590F270A6D9C /* PatternSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A5A80FB1C08A3CA2C65A7AC /* PatternSelectView.swift */; };
+		E896272B2B7F9421EB687313 /* AppFlowModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E6EA731AF1CE436E76FE78F /* AppFlowModel.swift */; };
 		ED4FBD89F718E5B1D7F6F5F2 /* CupSpace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10BBBCB6BFD6F38F85206525 /* CupSpace.swift */; };
 		F7512B110534827A1A8DA2FA /* CupPose.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6F5F7158BDD961611FEC382 /* CupPose.swift */; };
 /* End PBXBuildFile section */
@@ -34,17 +47,30 @@
 		10BBBCB6BFD6F38F85206525 /* CupSpace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupSpace.swift; sourceTree = "<group>"; };
 		18B9B398D1F4B46FEE1F0FF4 /* SimulationDebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulationDebugView.swift; sourceTree = "<group>"; };
 		292D024373573DA5136313C9 /* MetalContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalContext.swift; sourceTree = "<group>"; };
+		2A5A80FB1C08A3CA2C65A7AC /* PatternSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternSelectView.swift; sourceTree = "<group>"; };
 		2AB71FF277E0EC685F1CEA8C /* AutoPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoPourSource.swift; sourceTree = "<group>"; };
 		3C9554692626962B308BBAA8 /* PourSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourSample.swift; sourceTree = "<group>"; };
 		449C8C8FEEE6C3AD5E221A29 /* Fluid.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Fluid.metal; sourceTree = "<group>"; };
 		4565DF4FB938A635EFFBE95B /* Simulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulation.swift; sourceTree = "<group>"; };
+		46C6FC1EC9D377DE2EDC2EAD /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		4E6EA731AF1CE436E76FE78F /* AppFlowModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowModel.swift; sourceTree = "<group>"; };
+		5166D096E7A0A967631E6297 /* PracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeView.swift; sourceTree = "<group>"; };
 		699FEAF82B28EE704F49B4E7 /* LevelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelModel.swift; sourceTree = "<group>"; };
+		70C141F5E39B86BDF28AC397 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		8028DBAF1675F96CBA7A3F57 /* PourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourSource.swift; sourceTree = "<group>"; };
+		84E12F47B12066FC548A52B6 /* ResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultView.swift; sourceTree = "<group>"; };
+		85E3B3BA57FF42AEF046DB3D /* CalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationView.swift; sourceTree = "<group>"; };
+		8F56A1750503A7F46311A8CE /* CameraStage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraStage.swift; sourceTree = "<group>"; };
 		957D4D9E9A9E5DF9DE08C16C /* AprilTagPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AprilTagPourSource.swift; sourceTree = "<group>"; };
-		9838B2BCDB97181740403476 /* LatteArt.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LatteArt.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		BABDB3DE8EFA76EEAB0E8CB5 /* CameraPourView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPourView.swift; sourceTree = "<group>"; };
+		9838B2BCDB97181740403476 /* LatteArt.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LatteArt.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AB9E29624AC80063988808AB /* Pattern.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Pattern.swift; sourceTree = "<group>"; };
+		B29A13FE8EB56D544F0F9878 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
+		C010636B448BA307E1689A69 /* SetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupView.swift; sourceTree = "<group>"; };
+		CD5CA3D207A9B50AAB68E451 /* GuidanceCanvas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuidanceCanvas.swift; sourceTree = "<group>"; };
 		CFCBB9B8F001EA627BC95663 /* AprilTagTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AprilTagTracker.swift; sourceTree = "<group>"; };
 		D0478823C1B679BE388CE618 /* LatteArtApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LatteArtApp.swift; sourceTree = "<group>"; };
+		D64FD80135E73B52570638C0 /* BeforePracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BeforePracticeView.swift; sourceTree = "<group>"; };
+		D66787CBCCB27E792681F056 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		D6F5F7158BDD961611FEC382 /* CupPose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupPose.swift; sourceTree = "<group>"; };
 		D7C291F27E3B9B0B80AA8953 /* CupGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupGeometry.swift; sourceTree = "<group>"; };
 		DB9F8841417BDD1BFB5FC5BD /* TouchPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchPourSource.swift; sourceTree = "<group>"; };
@@ -105,10 +131,36 @@
 		5AAF5CD0D31BAF1F724E52BC /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
-				BABDB3DE8EFA76EEAB0E8CB5 /* CameraPourView.swift */,
 				D0478823C1B679BE388CE618 /* LatteArtApp.swift */,
+				F3250DB0151E71410A82A696 /* App */,
+				FFC7DD557D4BFC401AAC9DE6 /* DesignSystem */,
+				FA3157AFC479ACF69AAB2898 /* Guidance */,
+				A0964F459B8D72BFCEA43AB6 /* Patterns */,
+				83240E34A8B6456B3522642F /* Screens */,
 			);
 			path = Presentation;
+			sourceTree = "<group>";
+		};
+		83240E34A8B6456B3522642F /* Screens */ = {
+			isa = PBXGroup;
+			children = (
+				D64FD80135E73B52570638C0 /* BeforePracticeView.swift */,
+				85E3B3BA57FF42AEF046DB3D /* CalibrationView.swift */,
+				2A5A80FB1C08A3CA2C65A7AC /* PatternSelectView.swift */,
+				5166D096E7A0A967631E6297 /* PracticeView.swift */,
+				84E12F47B12066FC548A52B6 /* ResultView.swift */,
+				C010636B448BA307E1689A69 /* SetupView.swift */,
+				B29A13FE8EB56D544F0F9878 /* SplashView.swift */,
+			);
+			path = Screens;
+			sourceTree = "<group>";
+		};
+		A0964F459B8D72BFCEA43AB6 /* Patterns */ = {
+			isa = PBXGroup;
+			children = (
+				AB9E29624AC80063988808AB /* Pattern.swift */,
+			);
+			path = Patterns;
 			sourceTree = "<group>";
 		};
 		BE4DFE4E57A23FE192255658 /* Simulation */ = {
@@ -127,12 +179,39 @@
 			path = Simulation;
 			sourceTree = "<group>";
 		};
+		F3250DB0151E71410A82A696 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				4E6EA731AF1CE436E76FE78F /* AppFlowModel.swift */,
+				8F56A1750503A7F46311A8CE /* CameraStage.swift */,
+				70C141F5E39B86BDF28AC397 /* RootView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
 		F4CE9390596555841E0B4008 /* Products */ = {
 			isa = PBXGroup;
 			children = (
 				9838B2BCDB97181740403476 /* LatteArt.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		FA3157AFC479ACF69AAB2898 /* Guidance */ = {
+			isa = PBXGroup;
+			children = (
+				CD5CA3D207A9B50AAB68E451 /* GuidanceCanvas.swift */,
+			);
+			path = Guidance;
+			sourceTree = "<group>";
+		};
+		FFC7DD557D4BFC401AAC9DE6 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				D66787CBCCB27E792681F056 /* Components.swift */,
+				46C6FC1EC9D377DE2EDC2EAD /* Theme.swift */,
+			);
+			path = DesignSystem;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -165,6 +244,11 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					611CE05FBC3F3ECA03692B7A = {
+						DevelopmentTeam = "";
+					};
+				};
 			};
 			buildConfigurationList = 5BD9B2B92D643F46D401D7C3 /* Build configuration list for PBXProject "LatteArt" */;
 			developmentRegion = en;
@@ -193,25 +277,38 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E896272B2B7F9421EB687313 /* AppFlowModel.swift in Sources */,
 				5DDCDF100D65B266D0C2DB31 /* AprilTagPourSource.swift in Sources */,
 				104124D834860B2BE50B476F /* AprilTagTracker.swift in Sources */,
 				9E7BD0EE162D508F90D0A989 /* AutoPourSource.swift in Sources */,
-				1FAE06514B11EC40A72FFF09 /* CameraPourView.swift in Sources */,
+				683E9479D80452159B1E6A44 /* BeforePracticeView.swift in Sources */,
+				2F7D8D035F15B139C209D353 /* CalibrationView.swift in Sources */,
+				0FBD305A33E67C10A6A0799D /* CameraStage.swift in Sources */,
+				DC14B241A5FB6C4A0CD66F5A /* Components.swift in Sources */,
 				AF9FCE3EC606D5A4100CCEEF /* CupGeometry.swift in Sources */,
 				F7512B110534827A1A8DA2FA /* CupPose.swift in Sources */,
 				ED4FBD89F718E5B1D7F6F5F2 /* CupSpace.swift in Sources */,
 				3417339CF97DC7EF06700278 /* Fluid.metal in Sources */,
 				C497D7165553E67D93C66E24 /* FluidBlitter.swift in Sources */,
 				6E8B766BDEAE945ED98DCD06 /* FluidSimulation.swift in Sources */,
+				BEE52852984BDCEBB07EED95 /* GuidanceCanvas.swift in Sources */,
 				D2BB56BF4C76F28B49CD69D0 /* LatteArtApp.swift in Sources */,
 				36B6DB15C0D640A538FF1EEF /* LevelModel.swift in Sources */,
 				2C8A23722A97F06E6E9EAAB3 /* MetalContext.swift in Sources */,
+				0E86EC469AC08E3B84769E7D /* Pattern.swift in Sources */,
+				E6BEA3D34CBB590F270A6D9C /* PatternSelectView.swift in Sources */,
 				6B210F612C605631B67B98CE /* PourPhysics.swift in Sources */,
 				94F05AFE2A7F914BA7BCE86C /* PourSample.swift in Sources */,
 				59F562EEA9244D9AD5AA7E62 /* PourSource.swift in Sources */,
+				C3456C39B59CBA76BDFA21D4 /* PracticeView.swift in Sources */,
+				20E3EC72F87DD88DAA4ADF7A /* ResultView.swift in Sources */,
+				C7780B6390DAD6D34F64EB30 /* RootView.swift in Sources */,
+				9526D89FC005187362ED5EA5 /* SetupView.swift in Sources */,
 				0DED854D1111023DCD238E07 /* Simulation.swift in Sources */,
 				5F5EB05BF9B994701BC6BAD0 /* SimulationController.swift in Sources */,
 				D5A5325BBC35F3C7AA19C92C /* SimulationDebugView.swift in Sources */,
+				D68EC3C3E584CA4EE9B5D469 /* SplashView.swift in Sources */,
+				10BB394EDFBF907C7855C92F /* Theme.swift in Sources */,
 				1F64563BF90338E258BC6F15 /* TouchPourSource.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -284,9 +381,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = YQ299RVZTY;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LatteArt/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -294,8 +389,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.pourfect;
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.signvrse.latteart;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -373,9 +467,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = YQ299RVZTY;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = LatteArt/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -383,8 +475,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.pourfect;
-				PROVISIONING_PROFILE_SPECIFIER = "";
+				PRODUCT_BUNDLE_IDENTIFIER = com.signvrse.latteart;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
