@@ -2,7 +2,9 @@ import Foundation
 import simd
 import QuartzCore
 
-/// Pour source driven by the pitcher's 2 AprilTags (spout + back). Replaces
+/// Pour source driven by the pitcher's AprilTags: the spout tag (required —
+/// fixes the pour's landing point) plus whichever of `AprilTagRoles.
+/// pitcherReferenceIDs` is currently visible (used for tilt). Replaces
 /// touch-drag on the ARKit device path entirely: as the real pitcher moves and
 /// tilts over the real cup, this produces the same `PourSample` stream
 /// `TouchPourSource` produces for the Simulator, so the rest of the app is
@@ -40,23 +42,33 @@ final class AprilTagPourSource: PourSource {
     func start() { active = true }
     func stop() { active = false; current = nil }
 
-    /// Called every ARFrame with this frame's pitcher tag world points (may be
-    /// missing one or both) and the current cup geometry (nil until the cup is
-    /// acquired).
-    func update(pitcherWorldPoints: [Int: SIMD3<Float>], cup: CupGeometry?, time: TimeInterval) {
+    /// Called every ARFrame with this frame's pitcher tag world TRANSFORMS
+    /// (position + orientation; may be missing any of them) and the current
+    /// cup geometry (nil until the cup is acquired). Position is required from
+    /// the spout tag specifically — it's what fixes the pour's landing point —
+    /// but tilt can come from whichever reference tag is visible (preferring
+    /// the one farthest from the spout) or, if none are, the spout tag's own
+    /// orientation alone; see `tilt(...)`.
+    func update(pitcherWorldTransforms: [Int: simd_float4x4], cup: CupGeometry?, time: TimeInterval) {
         guard active, let cup else { end(at: time); return }
-        guard let spout = pitcherWorldPoints[AprilTagRoles.pitcherSpoutID],
-              let back = pitcherWorldPoints[AprilTagRoles.pitcherBackID] else {
+        guard let spoutTransform = pitcherWorldTransforms[AprilTagRoles.pitcherSpoutID] else {
             end(at: time); return
         }
+        let spout = SIMD3<Float>(spoutTransform.columns.3.x, spoutTransform.columns.3.y, spoutTransform.columns.3.z)
 
-        // Tilt is the angle of the spout->back vector from horizontal: for a
-        // rigid pitcher the raw 3D distance between the two tags stays ~fixed
-        // regardless of tilt, but this angle changes exactly as the pitcher
-        // tips over to pour.
-        let d = spout - back
-        let horiz = simd_length(SIMD2<Float>(d.x, d.z))
-        let tilt = atan2(abs(d.y), max(horiz, 1e-4))
+        // Prefer whichever visible reference tag sits farthest from the
+        // spout — on a roughly-cylindrical pitcher, farthest-from-spout is
+        // closest to directly opposite it, which gives the tipping motion
+        // its strongest, least noise-sensitive vertical excursion (see
+        // tilt(...) doc comment).
+        let referenceTransform = AprilTagRoles.pitcherReferenceIDs
+            .compactMap { pitcherWorldTransforms[$0] }
+            .max { a, b in
+                let da = simd_distance(SIMD3<Float>(a.columns.3.x, a.columns.3.y, a.columns.3.z), spout)
+                let db = simd_distance(SIMD3<Float>(b.columns.3.x, b.columns.3.y, b.columns.3.z), spout)
+                return da < db
+            }
+        let tilt = Self.tilt(spout: spout, spoutTransform: spoutTransform, referenceTransform: referenceTransform)
 
         let uv = CupSpace.clampToCup(cup.cupUV(of: spout))
         // Real 3D translation is already available from tag pose estimation,
@@ -80,6 +92,54 @@ final class AprilTagPourSource: PourSource {
         current = sample
         lastGoodSampleTime = time
         onSample?(sample)
+    }
+
+    /// Pitcher tilt, radians from horizontal — preferring the two-tag
+    /// baseline (spout + whichever reference tag is visible, chosen by the
+    /// caller to be the one farthest from the spout), falling back to the
+    /// spout tag's own orientation when no reference tag is visible at all.
+    ///
+    /// Two-tag method: the angle of the spout→reference vector from
+    /// horizontal. For a rigid pitcher the raw 3D distance between the two
+    /// tags stays ~fixed regardless of tilt, but this angle changes exactly
+    /// as the pitcher tips over to pour — PROVIDED the reference tag is
+    /// roughly aligned with the pour direction (i.e. close to directly
+    /// opposite the spout). A reference tag mounted 90° around instead of
+    /// opposite gives a weaker, noisier reading: as the pitcher tips about
+    /// an axis roughly perpendicular to the pour direction, points aligned
+    /// WITH that direction (front/back) sweep the most vertically for a
+    /// given tilt, while points off to the side (90°) sweep much less —
+    /// smaller signal, and the same absolute position noise produces a
+    /// larger angular error over a shorter horizontal baseline. This is why
+    /// the caller prefers whichever visible reference tag is farthest from
+    /// the spout, and why `docs/tags/PLACEMENT.md` recommends mounting an
+    /// additional reference tag directly opposite the spout rather than
+    /// merely "somewhere else on the body".
+    ///
+    /// Single-tag fallback: `estimatePose` returns the tag's full orientation,
+    /// not just its position — `spoutTransform.columns.1` is the world-space
+    /// image of the tag's own local +Y axis (its printed "up" direction).
+    /// PROVIDED the tag is mounted upright (its printed up-arrow aligned with
+    /// the pitcher's true vertical when at rest — see docs/tags/PLACEMENT.md),
+    /// that axis points straight up at rest and tips away from world +Y by
+    /// exactly the pitcher's tilt as it pours. ARKit's world is gravity-aligned
+    /// by default, so world +Y ≡ "up" is a safe reference. Noisier than the
+    /// two-tag baseline (small-tag rotation estimates are less precise than
+    /// translation), but keeps the pour alive through a total reference-tag
+    /// dropout instead of stopping it outright.
+    private static func tilt(spout: SIMD3<Float>, spoutTransform: simd_float4x4,
+                             referenceTransform: simd_float4x4?) -> Float {
+        if let referenceTransform {
+            let reference = SIMD3<Float>(referenceTransform.columns.3.x, referenceTransform.columns.3.y, referenceTransform.columns.3.z)
+            let d = spout - reference
+            let horiz = simd_length(SIMD2<Float>(d.x, d.z))
+            return atan2(abs(d.y), max(horiz, 1e-4))
+        }
+        let up = simd_normalize(SIMD3<Float>(spoutTransform.columns.1.x,
+                                             spoutTransform.columns.1.y,
+                                             spoutTransform.columns.1.z))
+        let cosAngle = simd_dot(up, SIMD3<Float>(0, 1, 0))
+        return acos(min(max(cosAngle, -1), 1))
     }
 
     private func end(at time: TimeInterval) {

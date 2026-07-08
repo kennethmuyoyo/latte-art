@@ -9,17 +9,31 @@ import SwiftAprilTag
 enum AprilTagRoles {
     static let cupTagIDs: [Int] = [0, 1, 2]
     static let pitcherSpoutID = 10
-    static let pitcherBackID = 11
+
+    /// Tilt-reference tags on the pitcher body. Any number can be mounted;
+    /// whichever are visible this frame are considered, preferring whichever
+    /// sits farthest from the spout tag (see `AprilTagPourSource.tilt`'s doc
+    /// comment for why that's the one that gives the strongest, least
+    /// noise-sensitive tilt reading). `11` is the original tag, mounted 90°
+    /// around from the spout; `12` should be mounted DIRECTLY OPPOSITE the
+    /// spout (180°) — on a round pitcher, "farthest from spout" and "closest
+    /// to opposite" are the same thing, so 12 becomes the preferred reference
+    /// whenever it's visible, with 11 as a fallback if it's occluded.
+    static let pitcherReferenceIDs: [Int] = [11, 12]
 
     static var cupTagSizeMeters: Double = 0.014
     static var pitcherTagSizeMeters: Double = 0.014
 }
 
 /// Runs AprilTag detection + pose estimation against each ARFrame and reports
-/// every detected tag's world-space position, role-agnostic (callers filter by
-/// `AprilTagRoles`). Detection runs off the main thread; frames are dropped
-/// (not queued) while a detection is already in flight, since ARKit calls back
-/// at up to 60Hz and detection can take longer than one frame.
+/// every detected tag's full world-space transform (position AND orientation),
+/// role-agnostic (callers filter by `AprilTagRoles`). Reporting the whole
+/// transform — not just position — is what lets a caller fall back to reading
+/// a single tag's own orientation when a second tag needed for a two-tag
+/// measurement (e.g. pitcher tilt) is occluded; see `AprilTagPourSource`.
+/// Detection runs off the main thread; frames are dropped (not queued) while a
+/// detection is already in flight, since ARKit calls back at up to 60Hz and
+/// detection can take longer than one frame.
 final class AprilTagTracker {
     private let detector: Detector
     private let queue = DispatchQueue(label: "com.latteart.apriltag", qos: .userInitiated)
@@ -48,8 +62,12 @@ final class AprilTagTracker {
 
     /// Non-blocking. `completion` is called on the main thread with this
     /// frame's detections (or the previous call's frame skipped entirely, not
-    /// queued, if a detection is already running).
-    func process(frame: ARFrame, completion: @escaping ([Int: SIMD3<Float>]) -> Void) {
+    /// queued, if a detection is already running). Each entry is the tag's
+    /// full world transform: `.columns.3` is position (as before); columns
+    /// 0/1/2 are the world-space images of the tag's local X/Y/Z axes — e.g.
+    /// `.columns.1` is "which way the tag's own printed up-arrow points",
+    /// useful for orientation-only fallbacks.
+    func process(frame: ARFrame, completion: @escaping ([Int: simd_float4x4]) -> Void) {
         guard !busy else { return }
         busy = true
 
@@ -60,15 +78,13 @@ final class AprilTagTracker {
                                           cx: Double(intr.columns.2.x), cy: Double(intr.columns.2.y))
 
         queue.async { [detector] in
-            var world: [Int: SIMD3<Float>] = [:]
+            var world: [Int: simd_float4x4] = [:]
             if let detections = try? detector.detect(pixelBuffer: pixelBuffer) {
                 for d in detections {
                     let size = AprilTagRoles.cupTagIDs.contains(d.id)
                         ? AprilTagRoles.cupTagSizeMeters : AprilTagRoles.pitcherTagSizeMeters
                     guard let pose = d.estimatePose(intrinsics: intrinsics, tagSize: size) else { continue }
-                    let worldTransform = camTransform * Self.openCVToARKit * pose.transform
-                    let t = worldTransform.columns.3
-                    world[d.id] = SIMD3<Float>(t.x, t.y, t.z)
+                    world[d.id] = camTransform * Self.openCVToARKit * pose.transform
                 }
             }
             DispatchQueue.main.async {
