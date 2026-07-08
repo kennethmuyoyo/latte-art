@@ -34,6 +34,9 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
     @Published private(set) var spoutOverCup = true
     /// The detected cup as an on-screen circle for the SwiftUI guide ring.
     @Published private(set) var cupRing: CupRing? = nil
+    /// TEMPORARY diagnostic line for the on-device HUD (viewport, cup radius,
+    /// placement result) — remove once the disc/ring placement is confirmed.
+    @Published private(set) var debug = "—"
 
     struct CupRing: Equatable { var center: CGPoint; var radius: CGFloat }
 
@@ -136,6 +139,11 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
         cupDetected = (cup != nil)
         pitcherTagCount = pitcher.count
         spoutOverCup = !offCup
+
+        // TEMPORARY: surface why placement did/didn't happen.
+        let vp = String(format: "vp %.0f×%.0f", viewportSize.width, viewportSize.height)
+        let rad = cup.map { String(format: " R%.3fm", $0.radius) } ?? " R—"
+        debug = vp + rad + (ring != nil ? " ok" : " noplace")
     }
 
     /// Project the cup's world circle onto the screen and pack it into a
@@ -183,9 +191,7 @@ struct ARCameraContainer: UIViewRepresentable {
         return v
     }
 
-    func updateUIView(_ uiView: ARSCNView, context: Context) {
-        coordinator.viewportSize = uiView.bounds.size
-    }
+    func updateUIView(_ uiView: ARSCNView, context: Context) {}
 }
 
 /// The mock screen: live camera, the fluid disc composited on the tracked cup,
@@ -200,31 +206,36 @@ struct CameraPourView: View {
     }
 
     var body: some View {
-        ZStack {
-            ARCameraContainer(coordinator: coordinator)
-                .ignoresSafeArea()
-            SimulationView(blitter: coordinator.blitter, transparent: true)
-                .ignoresSafeArea()
-                .allowsHitTesting(false)
-            // Guide ring: outlines the detected cup rim so alignment is easy to
-            // judge while testing tag sizes/placement. Same center/radius the
-            // Metal disc uses, drawn full-screen to match the projection space.
-            GeometryReader { _ in
+        // Drive the projection viewport from the SwiftUI layout size (reliable),
+        // not from reading UIView.bounds in updateUIView (races the first
+        // frames). The ring below is positioned in this SAME coordinate space,
+        // so it lines up with the Metal disc by construction.
+        GeometryReader { geo in
+            ZStack {
+                ARCameraContainer(coordinator: coordinator)
+                    .ignoresSafeArea()
+                SimulationView(blitter: coordinator.blitter, transparent: true)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+                // Guide ring: outlines the detected cup rim so alignment is easy
+                // to judge while testing tag sizes/placement.
                 if let ring = coordinator.cupRing {
                     Circle()
                         .stroke(Color.cyan.opacity(0.9), lineWidth: 2)
                         .frame(width: ring.radius * 2, height: ring.radius * 2)
                         .position(ring.center)
+                        .allowsHitTesting(false)
                 }
+                VStack {
+                    CameraStatusHUD(coordinator: coordinator)
+                    Spacer()
+                }
+                .padding()
             }
-            .ignoresSafeArea()
-            .allowsHitTesting(false)
-            VStack {
-                CameraStatusHUD(coordinator: coordinator)
-                Spacer()
-            }
-            .padding()
+            .onAppear { coordinator.viewportSize = geo.size }
+            .onChange(of: geo.size) { _, newSize in coordinator.viewportSize = newSize }
         }
+        .ignoresSafeArea()
     }
 }
 
@@ -253,6 +264,7 @@ private struct CameraStatusHUD: View {
                         controller.fillFraction * 100,
                         String(describing: controller.phase)))
             Text(String(format: "φ %.2f   Fr %.2f", controller.stats.phi, controller.stats.froude))
+            Text(coordinator.debug).foregroundStyle(.yellow)   // TEMPORARY diagnostic
         }
         .font(.system(.footnote, design: .monospaced))
         .foregroundStyle(.white)
