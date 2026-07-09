@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0DED854D1111023DCD238E07 /* Simulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4565DF4FB938A635EFFBE95B /* Simulation.swift */; };
 		104124D834860B2BE50B476F /* AprilTagTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFCBB9B8F001EA627BC95663 /* AprilTagTracker.swift */; };
+		10BB394EDFBF907C7855C92F /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46C6FC1EC9D377DE2EDC2EAD /* Theme.swift */; };
 		13B1AA0014414ED17CF83ED0 /* PatternGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78F7906E625454812D456C23 /* PatternGuide.swift */; };
 		1F64563BF90338E258BC6F15 /* TouchPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB9F8841417BDD1BFB5FC5BD /* TouchPourSource.swift */; };
 		1FAE06514B11EC40A72FFF09 /* CameraPourView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BABDB3DE8EFA76EEAB0E8CB5 /* CameraPourView.swift */; };
@@ -22,9 +23,11 @@
 		40AD6E5CF3A73F82B131734D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B05DD7750BC1543370EA603E /* Assets.xcassets */; };
 		4EC52C982331F6DEC7EDD653 /* AppFlowModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA45DCEF0741D257D6F7D9EE /* AppFlowModel.swift */; };
 		59F562EEA9244D9AD5AA7E62 /* PourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8028DBAF1675F96CBA7A3F57 /* PourSource.swift */; };
+		5AA7ACD051B723FAEE61F33E /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74DE4EF006F65C0641EBBC18 /* SplashView.swift */; };
 		5DDCDF100D65B266D0C2DB31 /* AprilTagPourSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 957D4D9E9A9E5DF9DE08C16C /* AprilTagPourSource.swift */; };
 		5F5EB05BF9B994701BC6BAD0 /* SimulationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFF9C542197790D8D2EA6A51 /* SimulationController.swift */; };
 		60D5B477AF7DD47F4F7CCB12 /* SetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D003D27F9282EEC3942956 /* SetupView.swift */; };
+		6A8B9BACBE13B2DC84FC5100 /* ResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E27EC46D2A1FD1B4A57E639 /* ResultView.swift */; };
 		6B210F612C605631B67B98CE /* PourPhysics.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF962E3E372531135978BBB2 /* PourPhysics.swift */; };
 		6E8B766BDEAE945ED98DCD06 /* FluidSimulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7C6EBB152DE8E8CF31652E3 /* FluidSimulation.swift */; };
 		7196691A2B9D5A649AED7375 /* PracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CEB7DCE5EA00012E1318FD87 /* PracticeView.swift */; };
@@ -38,6 +41,7 @@
 		C59174FD74A81872148B609F /* CalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33B2D5BB432C36EF74FACB4E /* CalibrationView.swift */; };
 		D2BB56BF4C76F28B49CD69D0 /* LatteArtApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0478823C1B679BE388CE618 /* LatteArtApp.swift */; };
 		D5A5325BBC35F3C7AA19C92C /* SimulationDebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18B9B398D1F4B46FEE1F0FF4 /* SimulationDebugView.swift */; };
+		DC14B241A5FB6C4A0CD66F5A /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = D66787CBCCB27E792681F056 /* Components.swift */; };
 		ED4FBD89F718E5B1D7F6F5F2 /* CupSpace.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10BBBCB6BFD6F38F85206525 /* CupSpace.swift */; };
 		F7512B110534827A1A8DA2FA /* CupPose.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6F5F7158BDD961611FEC382 /* CupPose.swift */; };
 /* End PBXBuildFile section */
@@ -51,11 +55,14 @@
 		2AB71FF277E0EC685F1CEA8C /* AutoPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoPourSource.swift; sourceTree = "<group>"; };
 		33B2D5BB432C36EF74FACB4E /* CalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationView.swift; sourceTree = "<group>"; };
 		3C9554692626962B308BBAA8 /* PourSample.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourSample.swift; sourceTree = "<group>"; };
+		3E27EC46D2A1FD1B4A57E639 /* ResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResultView.swift; sourceTree = "<group>"; };
 		449C8C8FEEE6C3AD5E221A29 /* Fluid.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Fluid.metal; sourceTree = "<group>"; };
 		4565DF4FB938A635EFFBE95B /* Simulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Simulation.swift; sourceTree = "<group>"; };
+		46C6FC1EC9D377DE2EDC2EAD /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		4EC4F9C5A22F0F71C6EB313D /* PatternSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternSelectView.swift; sourceTree = "<group>"; };
 		5CE79BE18C1450059F929CFE /* PatternLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternLibrary.swift; sourceTree = "<group>"; };
 		699FEAF82B28EE704F49B4E7 /* LevelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelModel.swift; sourceTree = "<group>"; };
+		74DE4EF006F65C0641EBBC18 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		78F7906E625454812D456C23 /* PatternGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PatternGuide.swift; sourceTree = "<group>"; };
 		8028DBAF1675F96CBA7A3F57 /* PourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PourSource.swift; sourceTree = "<group>"; };
 		950794DC017763C95DA85375 /* AppFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppFlowView.swift; sourceTree = "<group>"; };
@@ -68,6 +75,7 @@
 		CEB7DCE5EA00012E1318FD87 /* PracticeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeView.swift; sourceTree = "<group>"; };
 		CFCBB9B8F001EA627BC95663 /* AprilTagTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AprilTagTracker.swift; sourceTree = "<group>"; };
 		D0478823C1B679BE388CE618 /* LatteArtApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LatteArtApp.swift; sourceTree = "<group>"; };
+		D66787CBCCB27E792681F056 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
 		D6F5F7158BDD961611FEC382 /* CupPose.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupPose.swift; sourceTree = "<group>"; };
 		D7C291F27E3B9B0B80AA8953 /* CupGeometry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CupGeometry.swift; sourceTree = "<group>"; };
 		DB9F8841417BDD1BFB5FC5BD /* TouchPourSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TouchPourSource.swift; sourceTree = "<group>"; };
@@ -142,7 +150,10 @@
 				EA2D02CC5B9F29D18E4082AC /* PourStep.swift */,
 				CEB7DCE5EA00012E1318FD87 /* PracticeView.swift */,
 				09F1420B107272B82263FDCF /* PreGuideView.swift */,
+				3E27EC46D2A1FD1B4A57E639 /* ResultView.swift */,
 				11D003D27F9282EEC3942956 /* SetupView.swift */,
+				74DE4EF006F65C0641EBBC18 /* SplashView.swift */,
+				FFC7DD557D4BFC401AAC9DE6 /* DesignSystem */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
@@ -169,6 +180,15 @@
 				9838B2BCDB97181740403476 /* LatteArt.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		FFC7DD557D4BFC401AAC9DE6 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				D66787CBCCB27E792681F056 /* Components.swift */,
+				46C6FC1EC9D377DE2EDC2EAD /* Theme.swift */,
+			);
+			path = DesignSystem;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -248,6 +268,7 @@
 				9E7BD0EE162D508F90D0A989 /* AutoPourSource.swift in Sources */,
 				C59174FD74A81872148B609F /* CalibrationView.swift in Sources */,
 				1FAE06514B11EC40A72FFF09 /* CameraPourView.swift in Sources */,
+				DC14B241A5FB6C4A0CD66F5A /* Components.swift in Sources */,
 				AF9FCE3EC606D5A4100CCEEF /* CupGeometry.swift in Sources */,
 				F7512B110534827A1A8DA2FA /* CupPose.swift in Sources */,
 				ED4FBD89F718E5B1D7F6F5F2 /* CupSpace.swift in Sources */,
@@ -267,10 +288,13 @@
 				22A9E52A07353654908852BA /* PourStep.swift in Sources */,
 				7196691A2B9D5A649AED7375 /* PracticeView.swift in Sources */,
 				3CCD8A0C64607C084D301168 /* PreGuideView.swift in Sources */,
+				6A8B9BACBE13B2DC84FC5100 /* ResultView.swift in Sources */,
 				60D5B477AF7DD47F4F7CCB12 /* SetupView.swift in Sources */,
 				0DED854D1111023DCD238E07 /* Simulation.swift in Sources */,
 				5F5EB05BF9B994701BC6BAD0 /* SimulationController.swift in Sources */,
 				D5A5325BBC35F3C7AA19C92C /* SimulationDebugView.swift in Sources */,
+				5AA7ACD051B723FAEE61F33E /* SplashView.swift in Sources */,
+				10BB394EDFBF907C7855C92F /* Theme.swift in Sources */,
 				1F64563BF90338E258BC6F15 /* TouchPourSource.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

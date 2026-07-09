@@ -19,6 +19,9 @@ struct LatteArtApp: App {
             SimulationDebugView()
             #else
             AppFlowView(model: model)
+                .preferredColorScheme(.dark)
+                .persistentSystemOverlays(.hidden)
+                .statusBarHidden(true)
             #endif
         }
     }

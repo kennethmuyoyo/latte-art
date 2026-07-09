@@ -10,6 +10,7 @@
 // lands; the ARSession-driving belongs in Sensor/Presentation long-term.
 
 import ARKit
+import QuartzCore
 import SceneKit
 import SwiftUI
 import simd
@@ -27,6 +28,10 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
     // HUD status — written only on the main thread (see `ingest`).
     @Published private(set) var cupDetected = false
     @Published private(set) var pitcherTagCount = 0
+    /// Which specific pitcher tag IDs are seen this frame (spout +
+    /// whichever reference tags) — `pitcherTagCount` alone can't tell you
+    /// WHICH tag dropped when tilt tracking goes bad.
+    @Published private(set) var pitcherTagsDetected: Set<Int> = []
     @Published private(set) var trackerReady = false
     /// `false` only when the spout tag IS seen but sits outside the rim — the
     /// pour is suppressed (water would miss the cup). Distinct from "spout not
@@ -35,6 +40,28 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
     /// The detected cup as an on-screen ellipse for the SwiftUI guide ring —
     /// the true projected shape (see `cupPose(from:)`), not a forced circle.
     @Published private(set) var cupRing: CupRing? = nil
+    /// Where the spout is right now, in cup UV — UNCLAMPED, i.e. this can sit
+    /// outside the rim (radius > 0.5) when the spout really is off-cup. Computed
+    /// directly from the tracked spout tag every frame the spout AND cup are
+    /// both seen, independent of `PourSample`/on-track pour-gating — so the
+    /// Practice guidance arrow (only shown while `spoutOverCup`) and the debug
+    /// marker can both reflect the spout's true tracked position, not a
+    /// clamped stand-in.
+    @Published private(set) var spoutCupUV: SIMD2<Float>? = nil
+    private var smoothedSpoutUV: SIMD2<Float>?
+    /// `true` when this frame's spout position came from `PitcherRegistration`
+    /// (the spout tag itself wasn't detected) rather than a genuine live
+    /// detection — surfaced so the debug HUD can show the difference instead
+    /// of `pitcherTagsDetected` silently looking the same either way.
+    @Published private(set) var spoutReconstructed = false
+    /// See where this is set in `ingest()` — an unthrottled, same-frame
+    /// snapshot of the pour pipeline's own state, for comparing against
+    /// `SimStats.hasSample` (published on a different, throttled cadence).
+    @Published private(set) var pourDebugLine = "—"
+    /// Captured the moment the spout AND a reference tag are seen together;
+    /// lets the spout's position keep being tracked from just the reference
+    /// tag afterward (see `PitcherRegistration`'s doc comment).
+    private var pitcherRegistration: PitcherRegistration?
     /// DEBUG: distinguishes "3D circle math failed" (no cup transforms /
     /// degenerate triangle) from "2D screen projection failed" (cupPose(from:)
     /// returned nil despite a valid 3D circle) — same top-line `cupDetected`
@@ -45,8 +72,19 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
 
     struct CupRing: Equatable {
         var center: CGPoint
-        var semiAxes: CGSize      // (semi-major, semi-minor), pixels
-        var angleRadians: Double  // y-down view space, matches CupPose.angle
+        var semiAxes: CGSize      // (semi-major, semi-minor), pixels — for display/rendering the OUTLINE only
+        var angleRadians: Double  // y-down view space, matches CupPose.angle — same caveat
+        /// Raw (smoothed) conjugate-diameter vectors, pixels — `center + dx·p
+        /// + dy·q` is the EXACT map from a cup-UV offset (dx,dy) to a screen
+        /// point. `semiAxes`/`angleRadians` are a lossy summary of the same
+        /// ellipse (an eigendecomposition drops a rotation term that only
+        /// matters for INTERIOR points, not for tracing the boundary curve) —
+        /// fine for drawing the ring/disc outline, but mapping any specific
+        /// point (the spout position, a pattern's target) through them
+        /// instead of `p`/`q` directly is a real, systematic mapping error,
+        /// not a jitter/precision issue — see `p`/`pPx` doc.
+        var p: SIMD2<Float>
+        var q: SIMD2<Float>
     }
 
     /// View size used to project cup geometry into normalized view space; set by
@@ -59,16 +97,46 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
     private var lastRing: CupRing?
     private let discHoldSeconds: TimeInterval = 0.3
 
-    // Smoothed screen-space cup center + conjugate-diameter vectors feeding
-    // `cupPose(from:)` — see that method's doc comment. The center needs its
-    // own smoothing distinct from p/q's: p/q only affect the ellipse's
-    // shape/rotation, but raw per-frame noise in the 3D cup-center estimate
-    // (from AprilTag pose noise, amplified further whenever `CupRegistration`
-    // re-derives it) shows up as the whole ring visibly floating/jittering
-    // around, independent of any rotation issue.
+    // Unlike the cup (physically static — held indefinitely once tracked,
+    // see `smoothedWorldCenter`'s doc comment), the pitcher is EXPECTED to
+    // move in and out of frame constantly, so `spoutCupUV` needs the
+    // opposite behavior: a short grace period (just enough to survive a
+    // single dropped frame), then actually clear, so the arrow/debug dot
+    // disappear soon after the pitcher is genuinely removed instead of
+    // showing a stale "ghost" position forever.
+    private var lastSpoutSeenTime: TimeInterval = 0
+    private let spoutHoldSeconds: TimeInterval = 0.2
+
+    // Screen-space cup center + conjugate-diameter vectors feeding
+    // `cupPose(from:)`, EMA-smoothed across frames to damp residual 2D
+    // projection noise (see that method's doc comment). This stays LIVE —
+    // never frozen — so the disc keeps following the real cup if the phone
+    // or cup genuinely moves; the actual "jumps between points" bug lived
+    // one layer down, in the 3D geometry (`smoothedWorldCenter` etc. below),
+    // not here.
     private var smoothedCenter: SIMD2<Float>?
     private var smoothedP: SIMD2<Float>?
     private var smoothedQ: SIMD2<Float>?
+
+    // World-space smoothing of the cup's rigid geometry itself. `ingest()`
+    // computes `cup` two different ways depending on how many rim tags are
+    // visible: an exact circumcenter from the raw 3-tag positions when all 3
+    // are seen, or a rotation-based reconstruction (via `CupRegistration`)
+    // from whichever 1-2 are seen otherwise. Tag visibility flickers
+    // constantly during normal tracking (not just while pouring), so this
+    // silently swaps between two methods with different noise/bias — the
+    // reconstruction path in particular amplifies per-tag ROTATION noise
+    // (rotation estimates from small planar tags are inherently less precise
+    // than translation) by the cup's radius acting as a lever arm. That
+    // amplified, method-dependent disagreement is what showed up as the ring
+    // visibly relocating to a different point, repeatedly, regardless of
+    // pouring. Smoothing the resulting `center`/`normal`/`radius` here, once,
+    // damps that discontinuity for every downstream consumer (pour UV,
+    // height-above-rim, occlusion, and the on-screen ellipse) instead of
+    // patching each of them separately.
+    private var smoothedWorldCenter: SIMD3<Float>?
+    private var smoothedWorldNormal: SIMD3<Float>?
+    private var smoothedWorldRadius: Float?
 
     /// Captured the moment all 3 cup tags are seen together; lets the cup
     /// keep tracking from just 1 or 2 of them afterward (see `CupRegistration`).
@@ -137,6 +205,43 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
             cup = CupGeometry.from(center: recon.center, radius: recon.radius, normal: recon.normal,
                                    cameraRight: right, cameraDown: down)
         }
+        var holdingCup = false
+        if cup == nil, let c = smoothedWorldCenter, let n = smoothedWorldNormal, let r = smoothedWorldRadius {
+            // ZERO cup tags visible at all this frame — the pitcher has to
+            // hover directly over the cup to pour into it, which is exactly
+            // the position most likely to cover all 3 rim tags at once
+            // (worst during a sweeping motion across the rim, e.g. tulip/
+            // rosetta). Without this, `cup` goes nil, the pour source sees
+            // no cup, and tracking drops outright the moment that happens —
+            // which is what was being reported. The cup/camera are assumed
+            // static for the session (same assumption the on-screen ring
+            // relies on), so holding the last smoothed geometry here is a
+            // trustworthy stand-in, not a guess.
+            cup = CupGeometry.from(center: c, radius: r, normal: n, cameraRight: right, cameraDown: down)
+            holdingCup = true
+        }
+
+        // Smooth the rigid geometry itself (see `smoothedWorldCenter`'s doc
+        // comment) — damps the disagreement between the two computation
+        // paths above before anything downstream (pour tracking, occlusion,
+        // the on-screen ellipse) ever sees it. Deliberately never reset on a
+        // loss: if `cup` is nil for a stretch, there's nothing new to blend
+        // toward, so just hold the last smoothed estimate and resume
+        // blending from it once tracking returns — no cold restart, no
+        // discontinuity of its own.
+        if let rawCup = cup {
+            let worldSmoothing: Float = 0.2
+            let center = smoothedWorldCenter.map { $0 + worldSmoothing * (rawCup.center - $0) } ?? rawCup.center
+            let normal = smoothedWorldNormal.map {
+                simd_normalize($0 + worldSmoothing * (rawCup.normal - $0))
+            } ?? rawCup.normal
+            let radius = smoothedWorldRadius.map { $0 + worldSmoothing * (rawCup.radius - $0) } ?? rawCup.radius
+            smoothedWorldCenter = center
+            smoothedWorldNormal = normal
+            smoothedWorldRadius = radius
+            cup = CupGeometry.from(center: center, radius: radius, normal: normal,
+                                   cameraRight: right, cameraDown: down)
+        }
 
         // Pitcher tags (spout + whichever tilt-reference tags are visible)
         // — full transforms preserved (not just position), so the source
@@ -145,8 +250,59 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
         // AprilTagPourSource.tilt).
         var pitcher: [Int: simd_float4x4] = [:]
         if let s = world[AprilTagRoles.pitcherSpoutID] { pitcher[AprilTagRoles.pitcherSpoutID] = s }
+        var pitcherReferenceTransforms: [Int: simd_float4x4] = [:]
         for refID in AprilTagRoles.pitcherReferenceIDs {
-            if let t = world[refID] { pitcher[refID] = t }
+            if let t = world[refID] { pitcher[refID] = t; pitcherReferenceTransforms[refID] = t }
+        }
+        // Snapshot before any reconstruction below synthesizes an entry —
+        // the debug HUD's per-tag readout should reflect what was actually
+        // SEEN this frame, not what got filled in.
+        pitcherTagsDetected = Set(pitcher.keys)
+
+        // Spout tag dropping out mid-tilt is common (tilting the pitcher to
+        // pour is exactly the motion that can rotate a spout-mounted tag
+        // away from the camera) but the spout is otherwise required with no
+        // fallback — losing it kills pour tracking at exactly the moment it
+        // matters most. Mirror `CupRegistration`: cache the spout's rigid
+        // offset from whichever reference tag(s) are visible the moment both
+        // are seen together, then reconstruct the spout's position from that
+        // cached offset whenever the spout itself isn't detected but a
+        // reference tag still is.
+        spoutReconstructed = false
+        if let spoutTransform = pitcher[AprilTagRoles.pitcherSpoutID], !pitcherReferenceTransforms.isEmpty {
+            pitcherRegistration = PitcherRegistration(spoutWorldPosition: position(spoutTransform),
+                                                      referenceTransforms: pitcherReferenceTransforms)
+        } else if pitcher[AprilTagRoles.pitcherSpoutID] == nil,
+                  let reg = pitcherRegistration, !pitcherReferenceTransforms.isEmpty,
+                  let reconstructed = reg.reconstructSpout(from: pitcherReferenceTransforms) {
+            // Orientation is never consumed for a reconstructed spout (see
+            // PitcherRegistration's doc comment) — a translation-only
+            // transform is all downstream code needs.
+            var synthesized = matrix_identity_float4x4
+            synthesized.columns.3 = SIMD4<Float>(reconstructed.x, reconstructed.y, reconstructed.z, 1)
+            pitcher[AprilTagRoles.pitcherSpoutID] = synthesized
+            spoutReconstructed = true
+        }
+
+        // Live spout UV for the guidance arrow + debug marker — see
+        // `spoutCupUV`'s doc comment. Tracks the spout continuously
+        // regardless of whether a pour is actually active or suppressed
+        // (off-cup) — deliberately NOT clamped to the rim here, so the debug
+        // marker shows the true tracked position for verification. Light
+        // smoothing only. Unlike the cup geometry, this DOES clear (after a
+        // short grace period, see `spoutHoldSeconds`) when the spout is no
+        // longer tracked — the pitcher is expected to leave the frame, so
+        // holding a stale position here would show a ghost arrow/dot.
+        if let cup, let spoutTransform = pitcher[AprilTagRoles.pitcherSpoutID] {
+            let raw = cup.cupUV(of: position(spoutTransform))
+            let smoothing: Float = 0.3
+            let smoothed = smoothedSpoutUV.map { $0 + smoothing * (raw - $0) } ?? raw
+            smoothedSpoutUV = smoothed
+            spoutCupUV = smoothed
+            lastSpoutSeenTime = time
+        } else if time - lastSpoutSeenTime > spoutHoldSeconds {
+            smoothedSpoutUV = nil
+            spoutCupUV = nil
         }
 
         // Suppress the pour when the spout is over the table, not the cup mouth.
@@ -155,37 +311,66 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
         // projects inside the rim. If it's outside, drop the spout so the source
         // ends the pour (water misses the cup → no deposit) while the cup stays
         // tracked — the disc/ring keep showing, only the pouring stops.
+        //
+        // A real pour often lands right at/near the rim edge, not dead center —
+        // exactly the zone a strict `isInside` (distance <= radius, no margin)
+        // is most likely to reject on any real positional noise, and doubly so
+        // for a `PitcherRegistration`-reconstructed spout (see that type's doc
+        // comment on rotation-noise amplification over the reference→spout
+        // offset). A ~20%-of-radius tolerance beyond the geometric rim absorbs
+        // that noise without meaningfully changing what "off cup" means (still
+        // rejects the spout being held out over the table).
+        let offCupTolerance: Float = 0.2 * CupSpace.radius
         var offCup = false
         var pourPitcher = pitcher
-        if let cup, let spoutTransform = pitcher[AprilTagRoles.pitcherSpoutID],
-           !CupSpace.isInside(cup.cupUV(of: position(spoutTransform))) {
-            pourPitcher[AprilTagRoles.pitcherSpoutID] = nil
-            offCup = true
-        }
-
-        // The pitcher only occludes the disc where it's ACTUALLY closer to the
-        // camera than the cup surface is — a real depth test, not "a tag is
-        // visible". Uses `pitcher` (pre-pour-suppression): the pitcher is
-        // still physically there even when pouring itself is suppressed.
-        // `FluidBlitter`/the shader only have 2 occlusion slots — with up to
-        // 3 pitcher tags now (spout + 2 reference tags), cap defensively
-        // rather than relying on FluidBlitter silently dropping the rest.
-        var occluders: [Occluder] = []
-        if let cup {
-            let cameraPos = position(camera.transform)
-            let tagSize = Float(AprilTagRoles.pitcherTagSizeMeters)
-            for (_, transform) in pitcher {
-                if let occluder = Self.occluder(forTag: position(transform), tagSizeMeters: tagSize,
-                                                cameraPos: cameraPos, cup: cup) {
-                    occluders.append(occluder)
-                }
+        var rimDistanceForDebug: Float? = nil
+        if let cup, let spoutTransform = pitcher[AprilTagRoles.pitcherSpoutID] {
+            let d = CupSpace.signedDistanceToRim(cup.cupUV(of: position(spoutTransform)))
+            rimDistanceForDebug = d
+            if d > offCupTolerance {
+                pourPitcher[AprilTagRoles.pitcherSpoutID] = nil
+                offCup = true
             }
         }
-        blitter.occluders = Array(occluders.prefix(2))
+
+        // Synchronized, UNTHROTTLED snapshot of exactly what's about to be
+        // handed to `source.update(...)` this same frame — `SimStats`/
+        // `hasSample` on the other hand is only published every 5th
+        // `SimulationController.advance()` call, a different loop (the Metal
+        // render loop, not this ARKit callback), so comparing the two after
+        // the fact can show a stale mismatch. This line is always in lockstep
+        // with `pitcherTagsDetected`/`spoutReconstructed` above.
+        pourDebugLine = String(format: "cupNil=%@ spoutInPourPitcher=%@ offCup=%@ rimDist=%@",
+                               cup == nil ? "Y" : "N",
+                               pourPitcher[AprilTagRoles.pitcherSpoutID] == nil ? "N" : "Y",
+                               offCup ? "Y" : "N",
+                               rimDistanceForDebug.map { String(format: "%.3f", $0) } ?? "—")
+
+        // Occlusion disabled per request: the cup surface should stay fully
+        // visible at all times, including under the pitcher. `occluder(forTag:)`
+        // is left in place (unused) rather than deleted, in case this needs
+        // to come back later.
+        blitter.occluders = []
 
         // Drive Ken's source exactly as it expects: called every processed frame,
         // it handles occlusion/grace and emits the PourSample the controller cached.
         source.update(pitcherWorldTransforms: pourPitcher, cup: cup, time: time)
+
+        // Read the source's OWN output back, same frame, unthrottled — isolates
+        // whether `AprilTagPourSource` itself is producing a sample at all
+        // (independent of `SimulationController`'s separately-clocked,
+        // throttled `SimStats`/freshness gate). Also compares the ARKit frame
+        // clock (`time`) against `CACurrentMediaTime()` — the freshness gate
+        // assumes these are the same clock; if they've drifted apart (e.g.
+        // real detection latency exceeding the 0.15s freshness window), that
+        // gap shows up directly here.
+        let clockGap = CACurrentMediaTime() - time
+        if let s = source.current {
+            pourDebugLine += String(format: " | source.current: tilt=%.1f° flow=%.2f clockGap=%.3fs",
+                                    (s.tiltRadians ?? -1) * 180 / .pi, s.flowRate, clockGap)
+        } else {
+            pourDebugLine += String(format: " | source.current=NIL clockGap=%.3fs", clockGap)
+        }
 
         // Seat the sim disc + guide ring on the real cup. Only count the cup as
         // placeable when the projection succeeds AND is sane — a near-collinear
@@ -193,23 +378,6 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
         // degenerate/huge circle, which we hide rather than paint over the feed.
         var ring: CupRing? = nil
         if cup == nil {
-            // Only reset the ellipse smoothing once the cup has actually been
-            // lost for a while (same grace window `discHoldSeconds` already
-            // uses to keep the disc itself visible) — NOT on every single
-            // nil frame. Real tag detection flickers for a frame or two
-            // constantly during an actual pour (the pitcher/hand briefly
-            // occludes a rim tag); resetting on every one of those blips
-            // meant tracking resumed from a raw, unsmoothed reading each
-            // time, which looked exactly like the disc snapping/jumping —
-            // worse the longer a practice session runs, since there are more
-            // chances for a blip. A real, sustained loss still resets so a
-            // later re-detection snaps to the fresh reading instead of
-            // drifting in from a stale, possibly far-away smoothed value.
-            if time - lastCupSeenTime > discHoldSeconds {
-                smoothedCenter = nil
-                smoothedP = nil
-                smoothedQ = nil
-            }
             debugLine = cupRegistration == nil
                 ? "no 3D circle yet (need all 3 cup tags + non-collinear, once)"
                 : "no cup tags visible at all (registered, but none in view)"
@@ -219,17 +387,23 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
         if let cup, viewportSize.width > 1 {
             if let pose = cupPose(from: cup, camera: camera, viewport: viewportSize) {
                 blitter.cupPose = pose
+                // `cupPose(from:)` just updated these as a side effect —
+                // guaranteed non-nil here since it only returns non-nil after
+                // successfully computing them.
                 let r = CupRing(
                     center: CGPoint(x: CGFloat(pose.center.x) * viewportSize.width,
                                     y: CGFloat(pose.center.y) * viewportSize.height),
                     semiAxes: CGSize(width: CGFloat(pose.axes.x) * viewportSize.width,
                                      height: CGFloat(pose.axes.y) * viewportSize.height),
-                    angleRadians: Double(pose.angle))
+                    angleRadians: Double(pose.angle),
+                    p: smoothedP ?? SIMD2<Float>(repeating: 0),
+                    q: smoothedQ ?? SIMD2<Float>(repeating: 0))
                 ring = r
-                debugLine = String(format: "ring c(%.0f,%.0f) a(%.0f,%.0f)px θ%.0f°",
+                debugLine = String(format: "ring c(%.0f,%.0f) a(%.0f,%.0f)px θ%.0f°%@",
                                    r.center.x, r.center.y,
                                    r.semiAxes.width, r.semiAxes.height,
-                                   r.angleRadians * 180 / .pi)
+                                   r.angleRadians * 180 / .pi,
+                                   holdingCup ? " [holding, 0 cup tags visible]" : "")
             } else {
                 debugLine = "3D circle OK, cupPose(from:) rejected it (nil)"
             }
@@ -243,13 +417,13 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
 
         cupRing = visible ? lastRing : nil
         cupDetected = (cup != nil)
-        pitcherTagCount = pitcher.count
+        pitcherTagCount = pitcherTagsDetected.count
         spoutOverCup = !offCup
 
         // TEMPORARY: surface why placement did/didn't happen.
         let vp = String(format: "vp %.0f×%.0f", viewportSize.width, viewportSize.height)
         let rad = cup.map { String(format: " R%.3fm", $0.radius) } ?? " R—"
-        debug = vp + rad + (ring != nil ? " ok" : " noplace")
+        debugLine += " | " + vp + rad + (ring != nil ? " ok" : " noplace")
     }
 
     /// A REAL depth test, not a guess: is this tag genuinely closer to the
@@ -311,14 +485,15 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
     /// vectors. For a 2x2 `M` those come from eigendecomposing the symmetric
     /// `M·Mᵗ` (closed-form for a 2x2, no general SVD needed).
     ///
-    /// `p`/`q` are smoothed (EMA) across frames before the fit: raw per-frame
-    /// tag noise made the fitted angle unstable, worst exactly when the cup
-    /// is viewed close to top-down (semi-major ≈ semi-minor), because the
-    /// eigenvector direction is ill-conditioned right at that point — tiny
-    /// noise flips or swings the angle wildly even though the cup hasn't
-    /// moved, which visibly dragged the pour target to a different screen
-    /// spot frame to frame. Smoothing the raw vectors (not the derived angle)
-    /// sidesteps the angle's own 180°-ambiguity wraparound entirely.
+    /// `p`/`q` (and the center) are EMA-smoothed across frames — damps
+    /// residual 2D projection noise on top of the (now separately smoothed)
+    /// 3D `cup` geometry this is fed. Deliberately stays LIVE, not frozen:
+    /// the disc has to keep following the real cup if the phone or cup
+    /// genuinely moves. The eigenvector-based angle fit is especially
+    /// unstable near a circular ellipse (semi-major ≈ semi-minor, the common
+    /// near-top-down view here) — smoothing the raw `p`/`q` vectors rather
+    /// than the derived angle sidesteps the angle's own 180°-ambiguity
+    /// wraparound, which a naive smoothed-angle average would get wrong.
     func cupPose(from cup: CupGeometry, camera: ARCamera, viewport: CGSize) -> CupPose? {
         let w = Float(viewport.width), h = Float(viewport.height)
         guard w > 1, h > 1 else { return nil }
@@ -329,6 +504,7 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
             let cg = camera.projectPoint(p, orientation: .landscapeRight, viewportSize: viewport)
             return SIMD2<Float>(Float(cg.x), Float(cg.y))   // pixels, y-down
         }
+
         let rawCenter = px(cup.center)
         let rawP = px(cup.center + cup.radius * cup.basisU) - rawCenter
         let rawQ = px(cup.center + cup.radius * cup.basisV) - rawCenter
@@ -353,8 +529,24 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
         // Eigenvector of M·Mᵗ for lambdaMax, i.e. the major-axis direction in
         // pixels: (M·Mᵗ − λI)v = 0 → v ∝ (b, λ−a) (or (λ−d, b); use whichever
         // has the larger magnitude component for numerical stability).
+        //
+        // A near-overhead camera views the cup close to top-down, so the
+        // projected shape sits close to a perfect circle essentially always
+        // (not just as an occasional edge case) — semiMinorPx/semiMajorPx
+        // stays close to 1. A circle's rotation isn't a meaningful quantity
+        // at all (visually indistinguishable regardless of the value), and
+        // right at that point the eigenvector direction is genuinely
+        // undefined — tiny tag-position noise swings the computed angle
+        // wildly frame to frame, which is what showed up as the ring
+        // spinning and, since the arrow's target position is rotated by
+        // this same angle, the arrow swinging around with it. Below the
+        // eccentricity threshold, don't trust the measurement at all —
+        // there's nothing real to measure — and just use 0.
+        let eccentricity = semiMajorPx > 1e-4 ? semiMinorPx / semiMajorPx : 1
         let angle: Float
-        if abs(b) > 1e-6 || abs(lambdaMax - a) > 1e-6 {
+        if eccentricity > 0.92 {
+            angle = 0
+        } else if abs(b) > 1e-6 || abs(lambdaMax - a) > 1e-6 {
             angle = atan2(lambdaMax - a, b)
         } else {
             // (b, lambdaMax-a) is ~(0,0) — the atan2 above would be numerically
@@ -367,6 +559,7 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
         // Reject nonsense: sub-pixel, or bigger than the screen (degenerate /
         // near-collinear tags → huge circumcircle).
         guard semiMajorPx > 2, semiMajorPx < max(w, h) else { return nil }
+
         return CupPose(center: SIMD2<Float>(cPx.x / w, cPx.y / h),
                        axes: SIMD2<Float>(semiMajorPx / w, semiMinorPx / h),
                        angle: angle, confidence: 1)

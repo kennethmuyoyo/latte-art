@@ -163,3 +163,50 @@ struct CupRegistration {
         return (center: centerSum / count, radius: radius, normal: simd_normalize(normalSum / count))
     }
 }
+
+/// Caches the pitcher's SPOUT tag position, expressed in each visible
+/// reference tag's own local frame, captured the moment they're seen
+/// together (a "registration") — mirrors `CupRegistration`'s design exactly,
+/// same rigid-body idea applied to the pitcher instead of the cup.
+///
+/// Once cached, the spout's world POSITION — all that's actually consumed
+/// downstream (cup UV, height-above-rim, and the two-tag tilt baseline's
+/// spout↔reference vector; orientation is only ever needed for the
+/// single-tag tilt fallback, which won't trigger here since a reference tag
+/// is required for this reconstruction to run at all) — can be recovered
+/// from ANY currently-visible reference tag alone. This lets pour tracking
+/// survive the spout tag itself dropping out of detection, which happens
+/// often: tilting the pitcher to pour is exactly the motion that can rotate
+/// a tag mounted near the spout away from the camera, while a reference tag
+/// mounted elsewhere on the body may stay in view throughout the same tilt.
+struct PitcherRegistration {
+    private var spoutLocalToReference: [Int: SIMD3<Float>] = [:]
+
+    /// Call whenever the spout AND at least one reference tag are visible
+    /// together — refreshed every such frame, self-correcting rather than
+    /// locking onto one early (possibly noisy) snapshot, same rationale as
+    /// `CupRegistration`.
+    init(spoutWorldPosition: SIMD3<Float>, referenceTransforms: [Int: simd_float4x4]) {
+        for (id, refTransform) in referenceTransforms {
+            let local = refTransform.inverse * SIMD4<Float>(spoutWorldPosition, 1)
+            spoutLocalToReference[id] = SIMD3<Float>(local.x, local.y, local.z)
+        }
+    }
+
+    /// Reconstructs the spout's world position from whichever registered
+    /// reference tag(s) are visible now, averaging across however many are
+    /// for a more stable result than picking one arbitrarily. `nil` if none
+    /// of the tags this registration knows about are visible this frame.
+    func reconstructSpout(from liveReferenceTransforms: [Int: simd_float4x4]) -> SIMD3<Float>? {
+        var sum = SIMD3<Float>(repeating: 0)
+        var count: Float = 0
+        for (id, local) in spoutLocalToReference {
+            guard let live = liveReferenceTransforms[id] else { continue }
+            let world = live * SIMD4<Float>(local, 1)
+            sum += SIMD3<Float>(world.x, world.y, world.z)
+            count += 1
+        }
+        guard count > 0 else { return nil }
+        return sum / count
+    }
+}

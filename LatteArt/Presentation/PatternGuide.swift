@@ -20,10 +20,14 @@ final class PatternGuide: ObservableObject {
     @Published private(set) var finished: Bool = false
     /// Last live pour landing point, in cup UV — lets the Practice screen draw
     /// a "you are here → next target" arrow without duplicating pour tracking.
+    /// EMA-smoothed (display only — `advance`'s own on-track judgment below
+    /// uses the raw `pour.uv`) since the raw spout-tag position is noisy
+    /// enough on its own to make the arrow visibly shake.
     @Published private(set) var lastUV: SIMD2<Float>?
 
     private var elapsed: TimeInterval = 0
     private var justAdvancedStep = false
+    private var smoothedLastUV: SIMD2<Float>?
 
     private let positionTolerance: Float = 0.12   // UV distance
     private let velocityTooFast: Float = 1.2      // UV/s
@@ -32,12 +36,26 @@ final class PatternGuide: ObservableObject {
 
     init(choreography: PourChoreography) {
         self.choreography = choreography
-        self.message = choreography.steps.first?.note ?? ""
+        self.message = choreography.steps.first?.cue ?? ""
     }
 
     var currentStep: PourStep? {
         guard currentIndex < choreography.steps.count else { return nil }
         return choreography.steps[currentIndex]
+    }
+
+    /// Where the pour should be RIGHT NOW for the current step — a fixed
+    /// point for a hold step, or a live interpolation along `targetUV
+    /// ...targetUVEnd` for a sweep step (e.g. a heart/tulip/rosetta's "pull
+    /// through", which is a continuous motion in the real technique, not a
+    /// point to sit on). Both the on-track judgment below and the Practice
+    /// screen's guide arrow read this, so coaching accuracy and what's drawn
+    /// always agree with each other.
+    var currentTargetUV: SIMD2<Float>? {
+        guard let step = currentStep else { return nil }
+        guard let end = step.targetUVEnd else { return step.targetUV }
+        let t = step.duration > 0 ? Float(min(max(elapsed / step.duration, 0), 1)) : 1
+        return step.targetUV + (end - step.targetUV) * t
     }
 
     /// Judges the live pour against the current step, then advances the
@@ -62,15 +80,19 @@ final class PatternGuide: ObservableObject {
         guard let pour else {
             onTrack = false
             isError = false
+            smoothedLastUV = nil   // pour stopped — don't ease in from a stale spot when it resumes
             return
         }
-        lastUV = pour.uv
+        let smoothing: Float = 0.2
+        let smoothed = smoothedLastUV.map { $0 + smoothing * (pour.uv - $0) } ?? pour.uv
+        smoothedLastUV = smoothed
+        lastUV = smoothed
 
-        let distance = simd_distance(pour.uv, step.targetUV)
+        let distance = simd_distance(pour.uv, currentTargetUV ?? step.targetUV)
         let speed = simd_length(pour.velocity)
         var onTrackNow = distance <= positionTolerance
         var errorNow = false
-        var candidate = step.note
+        var candidate = step.cue
 
         if !onTrackNow {
             errorNow = true

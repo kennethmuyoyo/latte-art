@@ -16,7 +16,7 @@ import CoreGraphics
 /// recreating its own `ARSCNView`/`ARSession` from scratch — now there's
 /// only ever one, built here, reused for the app's lifetime).
 final class AppFlowModel: ObservableObject {
-    @Published var phase: Phase = .setup
+    @Published var phase: Phase = .splash
     @Published var selectedPattern: LattePattern?
     @Published var guide: PatternGuide?
     @Published private(set) var coordinator: CameraPourCoordinator?
@@ -48,6 +48,11 @@ final class AppFlowModel: ObservableObject {
         coordinator?.viewportSize = size
     }
 
+    /// Called by `SplashView` after its brief logo beat.
+    func advanceFromSplash() {
+        phase = .setup
+    }
+
     func readyForCalibration() {
         phase = .calibration
     }
@@ -67,10 +72,27 @@ final class AppFlowModel: ObservableObject {
         phase = .practice
     }
 
-    /// Used by both the Practice screen's back button and automatic
-    /// completion — always returns to Pattern Selection (no result/score
-    /// screen in this pass).
+    /// The Practice screen's own back button — bails out mid-session,
+    /// straight back to Pattern Selection. Distinct from the natural
+    /// completion path (`finishPractice()` → Result) below.
     func exitPractice() {
+        guide = nil
+        selectedPattern = nil
+        phase = .patternSelect
+    }
+
+    /// Reached automatically when `guide.finished` — see `wire(_:)`.
+    private func finishPractice() {
+        phase = .result
+    }
+
+    /// Result screen's "Try Again" — restarts the same pattern.
+    func tryAgain() {
+        beginPractice()
+    }
+
+    /// Result screen's "New Pattern".
+    func backToPatterns() {
         guide = nil
         selectedPattern = nil
         phase = .patternSelect
@@ -81,7 +103,7 @@ final class AppFlowModel: ObservableObject {
             guard let self, self.phase == .practice, let guide = self.guide else { return }
             guide.advance(dt: dt, pour: pour)
             if guide.finished {
-                DispatchQueue.main.async { self.exitPractice() }
+                DispatchQueue.main.async { self.finishPractice() }
             }
         }
     }

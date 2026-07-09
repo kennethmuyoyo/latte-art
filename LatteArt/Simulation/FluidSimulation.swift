@@ -29,9 +29,20 @@ final class FluidSimulation {
     private let jacobiIterations = 24
     private let velDissipation: Float = 1.0
     private let dyeDissipation: Float = 1.0
-    // Per-frame at 60 fps ≈ 88%/s decay (foam/bottom-drag regime; the old
-    // water-like 0.995 is why everything drifted).
-    private let velocityDamping: Float = 0.965
+    // Was 0.965 (≈88%/s decay) — the comment on `k_dampVelocity` says the
+    // point of this is to kill momentum "within ~a second" so a nudge on one
+    // side doesn't reach the opposite side of the cup, but 0.965 only leaves
+    // ~12% of velocity after a full second, not fully "killed" — and the
+    // pressure-projection solve that runs every step is inherently a GLOBAL
+    // elliptic solve (incompressibility means adding volume anywhere requires
+    // the whole basin to redistribute), so during a multi-second sustained
+    // pour that residual kept compounding frame over frame until it visibly
+    // reached across the whole grid. 0.90 (≈99.8%/s decay) actually delivers
+    // on "within ~a second" — real per-frame decay is still gentle (10%),
+    // enough for the intended local outward growth (`k_divergenceSource`'s
+    // "surface must move aside"), it just can no longer accumulate over a
+    // multi-second pour into cup-wide reach.
+    private let velocityDamping: Float = 0.90
 
     init?(context: MetalContext, size: Int = 256) {
         let device = context.device

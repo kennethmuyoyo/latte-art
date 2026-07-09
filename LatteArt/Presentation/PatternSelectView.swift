@@ -1,74 +1,38 @@
 import SwiftUI
 
-/// 3 pattern cards, each with its own Start button — tapping one jumps
-/// straight into that pattern's pre-practice guide (confirmed against the
-/// design mockup over the alternate "select then single Start Practice
-/// button" wording in the copy doc).
+/// "Choose Your Pattern" — 3 pattern cards, each with its own Start button —
+/// tapping one jumps straight into that pattern's pre-practice guide.
 struct PatternSelectView: View {
     @ObservedObject var model: AppFlowModel
 
     var body: some View {
-        ZStack {
-            Color.black.opacity(0.45).ignoresSafeArea()
-
-            VStack(spacing: 20) {
-                VStack(spacing: 6) {
-                    Text("Choose Your Next Pattern")
-                        .font(.title2.bold())
-                    Text("Master the fundamentals, one pour at a time.")
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.75))
-                }
-                .padding(.top, 20)
-
-                HStack(spacing: 14) {
-                    ForEach(LattePattern.allCases) { pattern in
-                        PatternCard(pattern: pattern) {
-                            model.choose(pattern)
-                        }
-                    }
-                }
-                .padding(.horizontal, 40)
-
-                Spacer()
+        VStack(spacing: 20) {
+            VStack(spacing: 4) {
+                Text("Choose Your Pattern")
+                    .appText(.title1).foregroundStyle(.white)
+                Text("Master the fundamentals, one pour at a time.")
+                    .appText(.body).foregroundStyle(Palette.onCameraDim)
             }
-            .foregroundStyle(.white)
-        }
-    }
-}
+            .shadow(color: .black.opacity(0.4), radius: 4, y: 1)
+            .padding(.top, 20)
 
-private struct PatternCard: View {
-    let pattern: LattePattern
-    let onStart: () -> Void
+            Spacer()
 
-    var body: some View {
-        VStack(spacing: 10) {
-            Image(pattern.thumbnailAssetName)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 84, height: 84)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-
-            Text(pattern.displayName)
-                .font(.headline)
-
-            Text(pattern.subtitle)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .fixedSize(horizontal: false, vertical: true)
-
-            Button(action: onStart) {
-                Text("Start")
-                    .font(.subheadline.bold())
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 8)
-                    .background(Color.accentColor, in: Capsule())
-                    .foregroundStyle(.white)
+            HStack(alignment: .top, spacing: Metrics.cardSpacing) {
+                ForEach(LattePattern.allCases) { pattern in
+                    PatternCardView(
+                        title: pattern.displayName,
+                        blurb: pattern.subtitle,
+                        level: pattern.level,
+                        imageName: pattern.thumbnailAssetName,
+                        isSelected: model.selectedPattern == pattern
+                    ) { model.choose(pattern) }
+                }
             }
+
+            Spacer()
         }
-        .padding(12)
         .frame(maxWidth: .infinity)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .padding(.horizontal, Metrics.screenPadding)
     }
 }

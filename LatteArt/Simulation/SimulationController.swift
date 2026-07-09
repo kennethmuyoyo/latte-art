@@ -13,6 +13,16 @@ struct SimStats {
     var froude: Float = 0
     var flow: Float = 0
     var height: Float = 0
+    /// Raw pitcher tilt, degrees — shown even when `flow == 0`, so a debug
+    /// HUD can tell "tilted, but not past PourPhysics.thetaStart yet" apart
+    /// from "no pour sample at all" (see `hasSample`).
+    var tiltDegrees: Float = 0
+    /// Where the pour is landing on the cup, in `CupSpace` UV.
+    var landingUV: SIMD2<Float> = SIMD2(0.5, 0.5)
+    /// Whether a fresh `PourSample` fed this frame's stats at all — `false`
+    /// means every other field here is a stale/default zero, not a real
+    /// "flow is zero" reading (e.g. spout tag not seen, or spout off-cup).
+    var hasSample: Bool = false
 }
 
 /// The BRAIN glue: consumes a `PourSource`'s `PourSample` stream, runs
@@ -68,8 +78,18 @@ final class SimulationController: ObservableObject {
     // the disc under a sustained pour by advecting dye everywhere.
     private let displacementScale: Float = 110
 
-    // Ignore samples older than this vs. now (mirrors the Sensor layer's grace).
-    private let freshness: TimeInterval = 0.15
+    // Ignore samples older than this vs. now. `sample.time` is stamped from
+    // ARKit's `ARFrame.timestamp`, compared here against `CACurrentMediaTime()`
+    // — the two clocks should agree, but `sample.time` is captured BEFORE
+    // AprilTag detection runs (`AprilTagTracker.process` is async image
+    // processing, not instant), so the real gap by the time this check runs
+    // is that detection latency, not just frame-to-frame delivery jitter.
+    // Was 0.15s — measured ~0.215s of real gap on-device even with a healthy,
+    // correctly-computed sample (confirmed via the pour debug HUD: tilt/flow
+    // were both right, only this gate was rejecting it), which meant every
+    // single sample was being discarded as "stale" before ever reaching the
+    // sim. Raised with real margin above that measurement.
+    private let freshness: TimeInterval = 0.4
 
     init(sim: FluidSimulation) { self.sim = sim }
 
@@ -104,7 +124,9 @@ final class SimulationController: ObservableObject {
             let derived = physics.derive(from: sample,
                                          surfaceDepthBelowRim: level.surfaceDepthBelowRimMeters)
             s = SimStats(phi: derived.phi, froude: derived.froude,
-                         flow: derived.flowMlPerSec, height: derived.heightMeters)
+                         flow: derived.flowMlPerSec, height: derived.heightMeters,
+                         tiltDegrees: (sample.tiltRadians ?? 0) * 180 / .pi,
+                         landingUV: sample.uv, hasSample: true)
             newPhase = derived.phi >= 0.5 ? .drawing : .mixing
 
             if derived.flowMlPerSec > 0 {

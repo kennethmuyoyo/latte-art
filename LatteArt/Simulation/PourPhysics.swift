@@ -8,12 +8,21 @@ struct PourPhysics {
     // Placeholder Q(θ): linear from start angle to max. These are the former
     // AprilTagPourSource restAngle/maxAngle — flow-curve endpoints are physics
     // constants and live here; Sensor migration pending.
-    var thetaStart: Float = 22 * .pi / 180
+    //
+    // thetaStart lowered from 22°: with only 2 of the 3 pitcher tags mounted
+    // right now (spout + 1 reference, no tag 12 yet), tilt readings are
+    // noisier/weaker than the 3-tag baseline this was tuned against, so a
+    // real tilt was often reading as just under the old threshold and
+    // registering zero flow. Retune back up once the 3rd tag is mounted.
+    var thetaStart: Float = 15 * .pi / 180
     var thetaMax: Float = 80 * .pi / 180
-    var qMax: Float = 45             // realistic latte pour — a 220 ml cup should
-                                     // take >10 s at moderate flow; 100 ml/s emptied
-                                     // it in ~2.4 s. (Still a placeholder pending the
-                                     // empirical Q(θ) calibration.)
+    var qMax: Float = 65             // was 45 (realistic latte pour — a 220 ml cup
+                                     // should take >10 s at moderate flow). Raised
+                                     // for now — a coached rep is only a few
+                                     // seconds long, so the original pacing meant
+                                     // even a good pour barely built up any visible
+                                     // fill/dye before the rep ended. Still a
+                                     // placeholder pending empirical calibration.
 
     // stream
     var spoutArea: Float = 1.2e-4    // m², effective stream cross-section

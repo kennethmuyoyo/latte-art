@@ -35,6 +35,8 @@ struct AppFlowView: View {
 
     @ViewBuilder private var content: some View {
         switch model.phase {
+        case .splash:
+            SplashView(model: model)
         case .setup:
             SetupView(model: model)
         case .calibration:
@@ -51,6 +53,8 @@ struct AppFlowView: View {
             if let coordinator = model.coordinator, let guide = model.guide {
                 PracticeView(model: model, coordinator: coordinator, guide: guide)
             }
+        case .result:
+            ResultView(model: model)
         }
     }
 }

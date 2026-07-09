@@ -3,11 +3,13 @@ import Foundation
 /// The app's top-level flow state. Distinct from `PourPhase` (Simulation's
 /// idle/mixing/drawing physics regime) — this is what screen we're on.
 enum Phase {
+    case splash
     case setup
     case calibration
     case patternSelect
     case preGuide
     case practice
+    case result
 }
 
 /// The 3 basic latte art patterns, with the copy from the design spec.
@@ -30,6 +32,15 @@ enum LattePattern: String, CaseIterable, Identifiable {
         case .heart: return "The first step to every great latte artist."
         case .tulip: return "Learn timing and layered pours."
         case .rosetta: return "Build rhythm, precision, and flow."
+        }
+    }
+
+    /// Difficulty badge shown on the pattern card ("Lv N").
+    var level: Int {
+        switch self {
+        case .heart: return 1
+        case .tulip: return 2
+        case .rosetta: return 3
         }
     }
 
