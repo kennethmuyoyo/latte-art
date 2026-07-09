@@ -75,68 +75,32 @@ final class SimulationController: ObservableObject {
     private var wantsReset = false
     private var frame = 0
 
-    // Injection scaling (visual tuning, not physics) — carried from the
-    // reference PourEngine.
-    private let dyePerSecond: Float = 24      // dye must be ~10× stronger than
-                                              // intuition — semi-Lagrangian
-                                              // advection smears it.
-    private let baseRadius: Float = 0.022
-    private let flowRadius: Float = 0.035
-    // The white circle must GROW BY DISPLACEMENT, not by staining: dye lands
-    // only in this tight core under the stream (the stream's true footprint),
-    // while the volume source below pushes over a wider area — so the white
-    // region expands because its front (and the crema/pattern around it) is
-    // physically shoved outward, which is how real latte art behaves. With
-    // dye and displacement sharing one radius, staining saturated the full
-    // footprint within a few frames and the pour read as white appearing ON
-    // TOP of the coffee instead of pushing it aside.
-    private let dyeCoreScale: Float = 0.55
-    private let displacementRadiusScale: Float = 1.6
-    // Momentum comes from the LANDING POINT's sweep motion (the contract-provided
-    // `velocity`), never a constant direction — a constant push drags all the
-    // milk one way (the "everything drifts up" bug).
-    private let sweepMomentum: Float = 70     // cells/s per (uv/s) of sweep
-    private let sweepCap: Float = 90          // cells/s
-    // Forward carry from the stream itself (heart mechanics): milk lands
-    // angled the way the pitcher is tipped (`PourSample.streamDirectionUV`),
-    // driving a broad surface JET that flows forward ahead of the landing
-    // point — so a pour HELD IN ONE SPOT still carries the growing circle
-    // (and the crema around it) forward; the cut back through it then folds
-    // the lobes into the heart. Three things make this a jet rather than a
-    // nudge, all learned from the first attempt (a small core-radius impulse
-    // that produced no visible drift):
-    //  - its own WIDE splat (`carryRadiusScale` × footprint), so the current
-    //    spans the whole blob, not just the landing pixel;
-    //  - centered a footprint AHEAD of the landing point, where a real
-    //    impacting stream's surface current is strongest;
-    //  - only softly φ-gated (`0.25 + 0.75φ`): even a firm, semi-plunging
-    //    pour drives real surface current — a hard φ gate muted the drift
-    //    exactly when the user was actually pouring.
-    // Direction is the per-frame MEASURED tip direction, not a constant, so
-    // this can't reintroduce the "everything drifts one way" bug.
-    private let streamCarry: Float = 45       // cells/s injected at full flow
-    private let carryRadiusScale: Float = 2.0
-    // Residence time makes holds and strokes DIFFERENT mechanics with one
-    // rule: volume deposited per unit area scales with how long the stream
-    // sits over a spot. Held pour (speed ≈ 0) → full displacement + forward
-    // jet, the blob blooms and drifts (heart step 1). Fast cut stroke →
-    // residence collapses, the shove/jet nearly vanish, and what remains is
-    // the narrow dye core dragged by `sweepMomentum` — a drawn LINE through
-    // the pattern (heart step 2). The speed here is where the crossover
-    // sits; the sim never needs to know which guide step is active.
-    private let strokeSpeed: Float = 0.35     // uv/s: at this speed, blob-building is halved
-    // Volume source strength. Mostly φ-gated (floating foam pushes the surface;
-    // plunging milk spreads its volume at depth, so only a thin 0.1 floor
-    // survives). Tuning history: 80 with a hard φ gate only pushed near-field
-    // (existing patterns unmoved); 220, and 120 with a 0.3 floor, whitewashed
-    // the disc under a sustained pour by advecting dye everywhere — but BOTH
-    // of those predate (a) velocity damping being fixed at 0.90/frame, which
-    // stops the multi-second compounding that caused the whitewash, and
-    // (b) the dye core being decoupled above, which removes most of the dye
-    // there was to smear. 180 with those in place is the displacement-led
-    // look; if whitewash ever reappears under a long pour, step back toward
-    // 140 before touching anything else.
-    private let displacementScale: Float = 180
+    // ==== Milk stream — port of typescript-fluid-simulator's Latte Scene ====
+    // (`FluidScene.setObstacle`, tool = Milk.) Their cup radius is 0.42 of a
+    // unit domain; ours is 0.5 of cup UV, so every length/speed scales by
+    // 0.5/0.42 ≈ 1.19.
+    //
+    // DELIBERATE deviation from the reference: no time decay. The reference
+    // fades the push to zero over 6 s and narrows the stream over 7 s of
+    // cumulative pouring; on device, the early-pour dynamics (full push,
+    // full-width stream — the part that visibly parts and carries the
+    // surface) are the ones that feel right, and the decay made the cut
+    // phase feel dead. The stream now behaves like the FIRST seconds of the
+    // reference pour for the entire motion.
+    private let milkStartSpeed: Float = 0.95        // uv/s (their 0.8 domain/s)
+    private let streamRadius: Float = 0.043         // uv (their 0.036)
+    private let streamRingWidth: Float = 0.036      // uv (their 0.03)
+
+    // The tracked inputs (landing point, sweep velocity, stream direction)
+    // arrive with per-frame tag noise; injecting them raw made the surface
+    // twitch frame-to-frame — no liquid moves like that. Coffee's response
+    // is damped and inertial, so the sim's INPUTS are low-pass filtered here
+    // with this time constant before any splat is built (the solver itself
+    // was fine — the shake was garbage-in). ~0.15s: visibly fluid, still
+    // responsive to a deliberate stroke (which lags by only ~this much).
+    private let inputSmoothingTau: Float = 0.15
+    private var smoothedLanding: SIMD2<Float>?
+    private var smoothedVelocity = SIMD2<Float>.zero
 
     // Ignore samples older than this vs. now. `sample.time` is stamped from
     // ARKit's `ARFrame.timestamp`, compared here against `CACurrentMediaTime()`
@@ -189,49 +153,51 @@ final class SimulationController: ObservableObject {
                          landingUV: sample.uv, hasSample: true)
             newPhase = derived.phi >= 0.5 ? .drawing : .mixing
 
+            // Low-pass the tracked inputs before building any splat — see
+            // `inputSmoothingTau`. The stats above deliberately keep the RAW
+            // values (the debug HUD should show what the sensor reported).
+            let alpha = dt / (inputSmoothingTau + dt)
+            let rawLanding = CupSpace.clampToCup(sample.uv)
+            let landing = smoothedLanding.map { $0 + alpha * (rawLanding - $0) } ?? rawLanding
+            smoothedLanding = landing
+            smoothedVelocity += alpha * (sample.velocity - smoothedVelocity)
+
             if derived.flowMlPerSec > 0 {
                 let qn = derived.flowMlPerSec / physics.qMax   // normalized flow 0…1
 
-                // Momentum from the landing point's sweep (contract `velocity`,
-                // uv/s), scaled by flow and capped — never a constant direction.
-                var momentum = sample.velocity * (sweepMomentum * qn)
-                let mag = simd_length(momentum)
-                if mag > sweepCap { momentum *= sweepCap / mag }
-
-                // Two splats, two radii, deliberately decoupled (see
-                // `dyeCoreScale`): the stain lands only in the stream's tight
-                // core (with the impact momentum), while the volume push acts
-                // over a wider footprint — the circle then grows because the
-                // pour physically displaces the surface outward, not because
-                // white was painted across the full radius.
-                let footprint = baseRadius + flowRadius * qn
-                let landing = CupSpace.clampToCup(sample.uv)
-                // Hold vs. stroke — see `strokeSpeed`.
-                let residence = 1 / (1 + simd_length(sample.velocity) / strokeSpeed)
-                sim.queue(Splat(
-                    point: landing,
-                    radius: footprint * dyeCoreScale,
-                    dye: derived.phi * qn * dyePerSecond * dt,
-                    momentum: momentum
+                // The ported stream model (see the constants block above and
+                // `k_milkStream`): white disc + set-velocity ring, constant
+                // dynamics for the whole motion (no time decay — see above).
+                // `qn` scales the push so real tilt still matters (the
+                // reference sim's mouse press is binary; our pour isn't).
+                let latteV = milkStartSpeed
+                let radius = streamRadius
+                let cells = Float(sim.size)
+                sim.setStream(MilkStream(
+                    center: landing,
+                    motionVel: smoothedVelocity * cells,
+                    // FIXED, toward the user (+y in cup UV = near rim) — per
+                    // the reference, whose jet always points at the viewer
+                    // and never follows the cursor. The heart DEPENDS on
+                    // this being stable: the blob blooms toward the user,
+                    // and a cut moving WITH the jet gets its exit edge
+                    // pulled into the point. Aiming this along the measured
+                    // pitcher direction (an earlier deviation) made the
+                    // bloom wander and the cut fight the jet — no heart.
+                    forward: SIMD2<Float>(0, 1),
+                    radius: radius,
+                    ringWidth: streamRingWidth,
+                    latteV: latteV * qn * cells,
+                    motionGain: latteV * qn
                 ))
-                sim.queue(Splat(
-                    point: landing,
-                    radius: footprint * displacementRadiusScale,
-                    dye: 0,
-                    momentum: .zero,
-                    displacement: displacementScale * qn * (0.1 + 0.9 * derived.phi) * residence
-                ))
-                // The stream's forward surface jet — see `streamCarry`.
-                if let streamDir = sample.streamDirectionUV {
-                    sim.queue(Splat(
-                        point: CupSpace.clampToCup(landing + streamDir * footprint),
-                        radius: footprint * carryRadiusScale,
-                        dye: 0,
-                        momentum: streamDir * (streamCarry * qn * (0.25 + 0.75 * derived.phi) * residence)
-                    ))
-                }
                 level.add(volumeMl: derived.flowMlPerSec * dt)
             }
+        } else {
+            // The pour broke (no fresh sample): restart the input filters so
+            // the next pour starts from its own first position instead of
+            // easing in from wherever the last one ended.
+            smoothedLanding = nil
+            smoothedVelocity = .zero
         }
 
         if wantsReset {

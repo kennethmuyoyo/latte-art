@@ -25,29 +25,36 @@ struct PracticeView: View {
     }
 
     var body: some View {
-        VStack {
-            // Fixed-width, centered card matching every other GlassCard in
-            // the app (PreGuideView/ResultView both use exactly this
-            // 320pt-wide convention) — this was stretched full-bleed with
-            // its own ad hoc padding before, which is why it read as a
-            // different visual language from the rest of the app.
-            StepGuideCard(guide: guide, tone: tone)
-                .frame(width: 320)
-                .padding(.top, 16)
-            Spacer()
-            if showDebugHUD {
-                PourDebugHUD(coordinator: coordinator)
-                    .allowsHitTesting(false)
+        ZStack {
+            // On-cup guidance (target dot / stroke line), full-bleed and
+            // UNPADDED — it draws in the same viewport coordinate space the
+            // tracked `cupRing` is reported in, so any padding here would
+            // shift the markers off the real cup.
+            PourGuideOverlay(coordinator: coordinator, guide: guide)
+                .allowsHitTesting(false)
+
+            VStack {
+                // Deliberately COMPACT: the full technique paragraph already
+                // lives on the Pre-Guide screen — during the pour a slim
+                // one-line pill is all the coaching that should sit over the
+                // scene (the previous 320pt card covered too much of it).
+                StepGuideCard(guide: guide, tone: tone)
+                    .padding(.top, 8)
+                Spacer()
+                if showDebugHUD {
+                    PourDebugHUD(coordinator: coordinator)
+                        .allowsHitTesting(false)
+                }
             }
+            .padding()
         }
-        .padding()
-        // Without an explicit full-screen frame here, this VStack sizes
-        // itself to fit its content — so toggling the (sizable) debug HUD
-        // on/off changed how big it wanted to be, and since the back/debug
-        // buttons are anchored to ITS corners via `.overlay(alignment:)`,
-        // they visibly moved inward whenever the HUD was hidden. Forcing
-        // this to always fill the available space keeps those corners fixed
-        // regardless of what's showing inside.
+        // Without an explicit full-screen frame here, the content sizes
+        // itself to fit — so toggling the (sizable) debug HUD on/off changed
+        // how big it wanted to be, and since the back/debug buttons are
+        // anchored to ITS corners via `.overlay(alignment:)`, they visibly
+        // moved inward whenever the HUD was hidden. Forcing this to always
+        // fill the available space keeps those corners fixed regardless of
+        // what's showing inside.
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .overlay(alignment: .topLeading) {
             BackButton { model.exitPractice() }.padding(16)
@@ -73,6 +80,83 @@ struct PracticeView: View {
 
 }
 
+/// On-cup guidance, mapped onto the real tracked cup through `CupRing`'s
+/// exact conjugate-diameter map (`center + dx·p + dy·q` — see its doc):
+///
+/// - `.whiteCircle` step: a small dot at the pour target plus a thin dashed
+///   ring showing the SAME tolerance zone the judgment uses.
+/// - `.sweep` step: the stroke's dashed line with a start dot and an end
+///   chevron; the traversed portion fills in solid as you draw it.
+/// - Your live landing point: one small dot.
+///
+/// Deliberately quiet — thin hairline strokes, small marks, and the only
+/// "am I following it?" feedback is the tint (white until a pour is tracked,
+/// green while on-track, soft red when off), matching the step card's tone.
+private struct PourGuideOverlay: View {
+    @ObservedObject var coordinator: CameraPourCoordinator
+    @ObservedObject var guide: PatternGuide
+
+    var body: some View {
+        Canvas { ctx, _ in
+            guard let ring = coordinator.cupRing, let step = guide.currentStep else { return }
+
+            // CupRing.p/q are the screen-space images of ONE CUP RADIUS
+            // (0.5 in CupSpace UV) along the cup's two conjugate axes.
+            func screen(_ uv: SIMD2<Float>) -> CGPoint {
+                let dx = CGFloat((uv.x - 0.5) / 0.5)
+                let dy = CGFloat((uv.y - 0.5) / 0.5)
+                return CGPoint(
+                    x: ring.center.x + dx * CGFloat(ring.p.x) + dy * CGFloat(ring.q.x),
+                    y: ring.center.y + dx * CGFloat(ring.p.y) + dy * CGFloat(ring.q.y))
+            }
+            /// A circle of `radiusUV` around a cup-UV point, mapped through
+            /// p/q (so it's the TRUE on-cup ellipse, not a screen circle).
+            func uvCircle(at uv: SIMD2<Float>, radiusUV: Float) -> Path {
+                let k = CGFloat(radiusUV / 0.5)
+                let center = screen(uv)
+                let m = CGAffineTransform(a: k * CGFloat(ring.p.x), b: k * CGFloat(ring.p.y),
+                                          c: k * CGFloat(ring.q.x), d: k * CGFloat(ring.q.y),
+                                          tx: center.x, ty: center.y)
+                return Path(ellipseIn: CGRect(x: -1, y: -1, width: 2, height: 2)).applying(m)
+            }
+            func dot(_ at: CGPoint, radius: CGFloat, color: Color) {
+                let r = CGRect(x: at.x - radius, y: at.y - radius,
+                               width: 2 * radius, height: 2 * radius)
+                // Dark halo first so the mark stays readable over white foam.
+                ctx.fill(Path(ellipseIn: r.insetBy(dx: -1.5, dy: -1.5)),
+                         with: .color(.black.opacity(0.35)))
+                ctx.fill(Path(ellipseIn: r), with: .color(color))
+            }
+
+            let tracking = guide.lastUV != nil
+            let tint: Color = !tracking ? .white
+                : (guide.isError ? Palette.wrong : Palette.correct)
+            let dash = StrokeStyle(lineWidth: 2, dash: [7, 6])
+
+            switch step.goal {
+            case .whiteCircle:
+                // The pour target + the exact judged tolerance zone.
+                ctx.stroke(uvCircle(at: step.targetUV, radiusUV: guide.positionTolerance),
+                           with: .color(tint.opacity(0.7)), style: dash)
+                dot(screen(step.targetUV), radius: 5, color: tint)
+
+            case .sweep:
+                // Deliberately NOTHING preset or drawn for the cut — the
+                // reference sim has no line concept, and the guide no longer
+                // judges one (see StepGoal.sweep). The cue text carries the
+                // technique; only the live landing dot below is shown, plus
+                // the card's progress bar as travel accrues.
+                break
+            }
+
+            // Live landing point — where your pour actually is right now.
+            if let uv = guide.lastUV {
+                dot(screen(uv), radius: 3.5, color: .white.opacity(0.95))
+            }
+        }
+    }
+}
+
 /// The actual guidance: a step counter + the current step's full instruction
 /// text (not a terse label — the real technique's own words), advancing one
 /// step at a time as each is genuinely completed. Tone-tinted (neutral until
@@ -93,38 +177,47 @@ private struct StepGuideCard: View {
     }
 
     var body: some View {
-        GlassCard {
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
-                    Text("Step \(min(guide.currentIndex + 1, stepCount)) of \(stepCount)")
-                        .appText(.small)
-                        .foregroundStyle(Palette.onCameraDim)
-                    Spacer()
-                    switch tone {
-                    case .correct: Image(systemName: "checkmark.circle.fill").foregroundStyle(tint)
-                    case .wrong: Image(systemName: "xmark.circle.fill").foregroundStyle(tint)
-                    case .neutral: EmptyView()
-                    }
-                }
+        // One slim pill, not a card — coaching must not cover the scene.
+        VStack(spacing: 4) {
+            HStack(spacing: 8) {
+                Text("\(min(guide.currentIndex + 1, stepCount))/\(stepCount)")
+                    .appText(.small)
+                    .foregroundStyle(Palette.onCameraDim)
                 Text(guide.message)
-                    .appText(.bodyBold)
+                    .appText(.small)
                     .foregroundStyle(tint)
-                    .fixedSize(horizontal: false, vertical: true)
-
-                // Live completion of the current step's goal (white laid /
-                // stroke drawn) — progress is real and surface-derived, so
-                // show it: "am I getting anywhere?" was invisible before.
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule().fill(.white.opacity(0.15))
-                        Capsule().fill(Palette.correct)
-                            .frame(width: geo.size.width * CGFloat(guide.stepProgress))
-                    }
+                    .lineLimit(1)
+                if guide.holdSeconds > 0 {
+                    Text(String(format: "%.1fs", guide.holdSeconds))
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(Palette.onCameraDim)
                 }
-                .frame(height: 5)
-                .animation(.linear(duration: 0.15), value: guide.stepProgress)
+                switch tone {
+                case .correct: Image(systemName: "checkmark.circle.fill")
+                    .font(.footnote).foregroundStyle(tint)
+                case .wrong: Image(systemName: "xmark.circle.fill")
+                    .font(.footnote).foregroundStyle(tint)
+                case .neutral: EmptyView()
+                }
             }
+
+            // Live completion of the current step's goal (white laid /
+            // stroke traveled) — real, surface-derived progress.
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(.white.opacity(0.15))
+                    Capsule().fill(Palette.correct)
+                        .frame(width: geo.size.width * CGFloat(guide.stepProgress))
+                }
+            }
+            .frame(height: 3)
+            .animation(.linear(duration: 0.15), value: guide.stepProgress)
         }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(.ultraThinMaterial, in: Capsule(style: .continuous))
+        .overlay(Capsule(style: .continuous).strokeBorder(Palette.onCameraFaint, lineWidth: 0.5))
+        .frame(maxWidth: 400)
         .animation(.easeInOut(duration: 0.2), value: guide.message)
     }
 }

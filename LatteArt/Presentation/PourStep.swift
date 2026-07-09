@@ -15,26 +15,27 @@ enum StepGoal {
     /// circle forms", measured by the circle actually forming, not by time
     /// spent hovering.
     case whiteCircle(milkMl: Float, maxHeightMeters: Float)
-    /// A continuous pull from `targetUV` to `targetUVEnd` while pouring —
-    /// the heart's finishing stroke through the circle, a tulip/rosetta
-    /// pull-through. Completes when the pour has genuinely traversed the
-    /// path (progress only ever ratchets forward, and only counts after the
-    /// stroke started near the path's beginning); `lateralTolerance` is how
-    /// far off the line still counts (wider for the rosetta's wiggle, which
-    /// sways around the path on purpose).
-    case sweep(lateralTolerance: Float)
+    /// A cut stroke, judged the way the reference fluid sim treats it — not
+    /// at all: no preset path, no direction lock, no line. The user simply
+    /// moves the pour; the sim's physics is what makes (or ruins) the
+    /// pattern. The guide only OBSERVES that the stream genuinely traveled
+    /// `travelUV` from where the stroke began (farthest distance ratchets;
+    /// hover jitter is absorbed by a trailing anchor), then the step is
+    /// done. The cue carries the technique ("cut through it toward
+    /// yourself"); the physics rewards following it.
+    case sweep(travelUV: Float)
 }
 
-/// One beat of a pour choreography: where the pour should land, the goal that
-/// completes the step (see `StepGoal`), and the full instruction text shown
-/// while it's active. Data, not code — new patterns are just new arrays, no
-/// engine changes.
+/// One beat of a pour choreography: where the pour should land (whiteCircle
+/// goals only — a sweep's path is the user's own), the goal that completes
+/// the step (see `StepGoal`), and the full instruction text shown while it's
+/// active. Data, not code — new patterns are just new arrays, no engine
+/// changes.
 struct PourStep {
+    /// The pour spot for `.whiteCircle`; unused by `.sweep` (free direction).
     var targetUV: SIMD2<Float>
     var goal: StepGoal
     var cue: String
-    /// End of the path for `.sweep` goals; unused for `.whiteCircle`.
-    var targetUVEnd: SIMD2<Float>? = nil
 }
 
 struct PourChoreography {

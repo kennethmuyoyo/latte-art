@@ -1,13 +1,28 @@
 import Metal
 import simd
 
-/// One queued splat — the only way anything enters the sim.
+/// One queued splat — additive dye/momentum injection (debug/legacy path).
 struct Splat {
     var point: SIMD2<Float>       // sim UV, y-down
     var radius: Float             // uv units
     var dye: Float                // white amount to add (already × φ)
     var momentum: SIMD2<Float>    // cells/sec impulse along the stream direction
     var displacement: Float = 0   // divergence-source strength; foam volume deposition
+}
+
+/// The live milk stream, one per frame while pouring — Swift mirror of the
+/// Metal `MilkStreamUniform` (field order/size must match). See
+/// `k_milkStream` in Fluid.metal: interior dye and ring velocities are SET
+/// (boundary condition), which is the typescript-fluid-simulator mechanic
+/// this ports — not an additive splat.
+struct MilkStream {
+    var center: SIMD2<Float>      // sim UV
+    var motionVel: SIMD2<Float>   // cells/s
+    var forward: SIMD2<Float>     // unit
+    var radius: Float             // uv
+    var ringWidth: Float          // uv
+    var latteV: Float             // cells/s
+    var motionGain: Float         // unitless
 }
 
 /// 2D Stam Stable Fluids on Metal compute. Owns the velocity/dye/pressure
@@ -23,26 +38,23 @@ final class FluidSimulation {
     private var prs: (MTLTexture, MTLTexture)
     private var div: (MTLTexture, MTLTexture)
 
-    private let pClear, pAdvect, pSplat, pDivergence, pDivSource, pJacobi, pSubtract, pDamp: MTLComputePipelineState
+    private let pClear, pAdvect, pSplat, pDivergence, pDivSource, pJacobi, pSubtract, pDamp,
+                pMilkStream: MTLComputePipelineState
 
     private var pending: [Splat] = []
+    /// The live milk stream this frame (see `MilkStream`) — set fresh by the
+    /// controller every frame it's pouring, consumed (one-shot) by `step`.
+    private var pendingStream: MilkStream?
     private let jacobiIterations = 24
     private let velDissipation: Float = 1.0
     private let dyeDissipation: Float = 1.0
-    // Was 0.965 (≈88%/s decay) — the comment on `k_dampVelocity` says the
-    // point of this is to kill momentum "within ~a second" so a nudge on one
-    // side doesn't reach the opposite side of the cup, but 0.965 only leaves
-    // ~12% of velocity after a full second, not fully "killed" — and the
-    // pressure-projection solve that runs every step is inherently a GLOBAL
-    // elliptic solve (incompressibility means adding volume anywhere requires
-    // the whole basin to redistribute), so during a multi-second sustained
-    // pour that residual kept compounding frame over frame until it visibly
-    // reached across the whole grid. 0.90 (≈99.8%/s decay) actually delivers
-    // on "within ~a second" — real per-frame decay is still gentle (10%),
-    // enough for the intended local outward growth (`k_divergenceSource`'s
-    // "surface must move aside"), it just can no longer accumulate over a
-    // multi-second pour into cup-wide reach.
-    private let velocityDamping: Float = 0.90
+    // typescript-fluid-simulator's Latte Scene `drag` — velocity keeps ~0.97
+    // per frame. History: 0.965, then 0.90 (to stop a sustained additive
+    // splat pour compounding into cup-wide slosh). The stream model doesn't
+    // compound — its ring velocities are SET each frame, not accumulated —
+    // so the reference sim's livelier drag is safe again, and 0.90 would
+    // kill the pour's push before it can visibly part the surface.
+    private let velocityDamping: Float = 0.97
 
     init?(context: MetalContext, size: Int = 256) {
         let device = context.device
@@ -53,9 +65,10 @@ final class FluidSimulation {
         guard let c = pipe("k_clear"), let a = pipe("k_advect"), let s = pipe("k_splat"),
               let d = pipe("k_divergence"), let ds = pipe("k_divergenceSource"),
               let j = pipe("k_jacobi"), let g = pipe("k_subtractGradient"),
-              let dm = pipe("k_dampVelocity")
+              let dm = pipe("k_dampVelocity"), let ms = pipe("k_milkStream")
         else { return nil }
-        (pClear, pAdvect, pSplat, pDivergence, pDivSource, pJacobi, pSubtract, pDamp) = (c, a, s, d, ds, j, g, dm)
+        (pClear, pAdvect, pSplat, pDivergence, pDivSource, pJacobi, pSubtract, pDamp,
+         pMilkStream) = (c, a, s, d, ds, j, g, dm, ms)
 
         self.device = device
         self.size = size
@@ -74,8 +87,13 @@ final class FluidSimulation {
 
     func queue(_ splat: Splat) { pending.append(splat) }
 
+    /// The live stream this frame; pass fresh every frame while pouring
+    /// (consumed one-shot by `step`), nothing while not.
+    func setStream(_ stream: MilkStream) { pendingStream = stream }
+
     func reset(in cb: MTLCommandBuffer) {
         pending.removeAll()
+        pendingStream = nil
         for t in [vel.0, vel.1, dye.0, dye.1, prs.0, prs.1, div.0, div.1] { clear(t, in: cb) }
     }
 
@@ -86,7 +104,22 @@ final class FluidSimulation {
         advect(src: dye.0, vel: vel.0, dst: dye.1, dt: dt, dissipation: dyeDissipation, in: cb)
         flip(&dye)
 
-        // 2. inject queued splats (dye into dye grid, momentum into velocity grid)
+        // 2a. stamp the live milk stream (dye + ring velocities SET — the
+        // ported typescript-fluid-simulator mechanic; see k_milkStream).
+        // Before the projection below, exactly like that sim's setObstacle →
+        // solve ordering: the set ring velocities carry divergence, and the
+        // solve's response is the surface visibly parting around the pour.
+        if var stream = pendingStream {
+            pendingStream = nil
+            if let e = encoder(cb, pMilkStream, [vel.0, vel.1, dye.0, dye.1]) {
+                e.setBytes(&stream, length: MemoryLayout<MilkStream>.stride, index: 0)
+                run(e)
+                flip(&vel)
+                flip(&dye)
+            }
+        }
+
+        // 2b. inject queued splats (dye into dye grid, momentum into velocity grid)
         for s in pending {
             if s.dye != 0 {
                 splat(from: dye.0, to: dye.1, point: s.point, radius: s.radius,

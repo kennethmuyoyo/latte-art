@@ -194,23 +194,17 @@ final class FluidBlitter: NSObject, MTKViewDelegate {
                 vertices.withUnsafeBytes { buf in
                     enc.setVertexBytes(buf.baseAddress!, length: buf.count, index: 0)
                 }
-                var occl = OcclusionUniform(
-                    uv0: occluders.count > 0 ? occluders[0].uv : .zero,
-                    radius0: occluders.count > 0 ? occluders[0].radius : 0,
-                    active0: occluders.count > 0 ? 1 : 0,
-                    uv1: occluders.count > 1 ? occluders[1].uv : .zero,
-                    radius1: occluders.count > 1 ? occluders[1].radius : 0,
-                    active1: occluders.count > 1 ? 1 : 0)
+                // Occlusion disabled BY DESIGN: the pitcher cutout in the
+                // surface (both the per-pixel scene-depth silhouette and the
+                // tag-circle fallback) read as visually bad on device — the
+                // surface now always draws fully opaque. All the upstream
+                // plumbing (depth capture, occluder computation) stays wired;
+                // re-enabling is just restoring the real uniforms here.
+                var occl = OcclusionUniform(uv0: .zero, radius0: 0, active0: 0,
+                                            uv1: .zero, radius1: 0, active1: 0)
                 enc.setFragmentBytes(&occl, length: MemoryLayout<OcclusionUniform>.stride, index: 0)
-                var depth = depthUniform
-                if let sceneTex = sceneDepthTexture {
-                    depth.drawableSize = SIMD2<Float>(Float(view.drawableSize.width),
-                                                      Float(view.drawableSize.height))
-                    enc.setFragmentTexture(sceneTex, index: 1)
-                } else {
-                    depth.enabled = 0
-                    enc.setFragmentTexture(placeholderDepthTexture, index: 1)
-                }
+                var depth = DepthOcclusionUniform.disabled
+                enc.setFragmentTexture(placeholderDepthTexture, index: 1)
                 enc.setFragmentBytes(&depth, length: MemoryLayout<DepthOcclusionUniform>.stride, index: 1)
                 enc.setFragmentTexture(dye, index: 0)
                 enc.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: 4)

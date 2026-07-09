@@ -51,7 +51,7 @@ enum LattePattern: String, CaseIterable, Identifiable {
     var instructions: String {
         switch self {
         case .heart:
-            return "Lower the pitcher close to the surface and pour steadily in one spot until a white circle forms. Then lift the pitcher slightly and pour through the center of the circle to create the heart shape."
+            return "Lower the pitcher close to the surface and pour steadily in one spot — the milk parts the surface and spreads into a circle that blooms toward you. When the circle has formed, lift the pitcher slightly and cut straight through it toward yourself in one motion; the exit of the stroke pulls the circle into the heart's point."
         case .tulip:
             return "The tulip is made by stacking several small pours on top of one another. Lower the pitcher close to the surface and make a short pour to create the first petal. Repeat this, each pour slightly pushing into the previous one. Finish by pulling the pitcher through the center to connect all the layers into a tulip."
         case .rosetta:

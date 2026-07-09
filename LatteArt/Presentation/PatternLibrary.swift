@@ -22,19 +22,21 @@ enum PatternLibrary {
     private static let drawHeight: Float = 0.05
 
     /// Real technique (blend phase skipped): hold the pour in ONE spot at the
-    /// center, close to the surface — the stream's own forward carry drifts
-    /// the growing circle ahead (see `SimulationController.streamCarry`) —
-    /// then cut back straight THROUGH the whole circle toward the near rim.
-    /// The cut starts on the far side of where the circle has drifted, so the
-    /// stroke pierces it completely and folds the lobes into the heart.
+    /// center, close to the surface — the incoming milk parts the surface and
+    /// spreads it into a circle that blooms toward the user (the stream's
+    /// fixed jet — see `k_milkStream` in Fluid.metal) — then ONE cut through
+    /// the whole circle. The cut is not judged as a line (the reference sim
+    /// has no such concept — see `StepGoal.sweep`); the cue steers it toward
+    /// the near rim because a cut moving WITH the jet is the one whose exit
+    /// gets pulled into the heart's point — the physics itself rewards the
+    /// right direction.
     private static let heart = PourChoreography(pattern: .heart, steps: [
         PourStep(targetUV: SIMD2(0.5, 0.5),
                  goal: .whiteCircle(milkMl: 30, maxHeightMeters: drawHeight),
-                 cue: "Pour steadily in one spot at the center, close to the surface, until a white circle forms."),
-        PourStep(targetUV: SIMD2(0.5, 0.38),
-                 goal: .sweep(lateralTolerance: 0.15),
-                 cue: "Lift slightly and cut straight back through the circle, toward the rim nearest you.",
-                 targetUVEnd: SIMD2(0.5, 0.88)),
+                 cue: "Hold the pour at the center — let the circle form."),
+        PourStep(targetUV: SIMD2(0.5, 0.5),
+                 goal: .sweep(travelUV: 0.45),
+                 cue: "Lift and cut through the circle, toward yourself."),
     ])
 
     /// Real technique: stack several short pours on top of one another, each
@@ -43,31 +45,28 @@ enum PatternLibrary {
     private static let tulip = PourChoreography(pattern: .tulip, steps: [
         PourStep(targetUV: SIMD2(0.5, 0.42),
                  goal: .whiteCircle(milkMl: 18, maxHeightMeters: drawHeight),
-                 cue: "Close to the surface, make a short pour — the first petal."),
+                 cue: "Short pour, close to the surface — first petal."),
         PourStep(targetUV: SIMD2(0.5, 0.56),
                  goal: .whiteCircle(milkMl: 14, maxHeightMeters: drawHeight),
-                 cue: "Short pour again, slightly closer to you — push into the first petal."),
+                 cue: "Another short pour, slightly closer to you."),
         PourStep(targetUV: SIMD2(0.5, 0.68),
                  goal: .whiteCircle(milkMl: 10, maxHeightMeters: drawHeight),
-                 cue: "One more small pour, pushing into the last one."),
+                 cue: "One more, pushing into the last."),
         PourStep(targetUV: SIMD2(0.5, 0.68),
-                 goal: .sweep(lateralTolerance: 0.15),
-                 cue: "Pull the pitcher through the center to connect the layers into a tulip.",
-                 targetUVEnd: SIMD2(0.5, 0.88)),
+                 goal: .sweep(travelUV: 0.35),
+                 cue: "Pull straight through the stack."),
     ])
 
     /// Real technique: wiggle side to side while steadily moving backward to
-    /// lay the leaf layers (the wiggle sways AROUND the backward path, hence
+    /// lay the leaf layers (the wiggle sways AROUND the travel line, hence
     /// the wide lateral tolerance), then stop the wiggle and pull straight
     /// through the middle to form the stem.
     private static let rosetta = PourChoreography(pattern: .rosetta, steps: [
-        PourStep(targetUV: SIMD2(0.5, 0.35),
-                 goal: .sweep(lateralTolerance: 0.25),
-                 cue: "Close to the surface, gently wiggle left and right while slowly moving backward.",
-                 targetUVEnd: SIMD2(0.5, 0.7)),
-        PourStep(targetUV: SIMD2(0.5, 0.7),
-                 goal: .sweep(lateralTolerance: 0.15),
-                 cue: "Stop the wiggle and pull straight through the middle to form the stem.",
-                 targetUVEnd: SIMD2(0.5, 0.15)),
+        PourStep(targetUV: SIMD2(0.5, 0.5),
+                 goal: .sweep(travelUV: 0.35),
+                 cue: "Wiggle side to side while moving back slowly."),
+        PourStep(targetUV: SIMD2(0.5, 0.5),
+                 goal: .sweep(travelUV: 0.5),
+                 cue: "Stop the wiggle — pull through the middle."),
     ])
 }

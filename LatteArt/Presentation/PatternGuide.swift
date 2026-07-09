@@ -34,6 +34,11 @@ final class PatternGuide: ObservableObject {
     /// traversed) — drives the step card's progress bar, so "am I making
     /// progress?" is visible instead of inferred.
     @Published private(set) var stepProgress: Float = 0
+    /// Seconds the pour has been genuinely held on the current white-circle
+    /// spot (accrues exactly when progress does, cumulative across brief
+    /// wobbles) — shown in the step card so "how long have I been holding?"
+    /// is answered on screen. Stays 0 for sweep steps.
+    @Published private(set) var holdSeconds: Float = 0
     /// Last live pour landing point, in cup UV — EMA-smoothed; the same
     /// smoothed position judgment uses.
     @Published private(set) var lastUV: SIMD2<Float>?
@@ -44,26 +49,29 @@ final class PatternGuide: ObservableObject {
     // Per-step goal accumulators, reset by `completeStep()`.
     private var whiteLaidMl: Float = 0
     private var sweepFarthest: Float = 0
-    private var sweepStarted = false
+
+    // Stroke state (see `StepGoal.sweep`): where the cut began. No direction,
+    // no line — the reference sim has neither; only distance traveled counts.
+    private var strokeStartUV: SIMD2<Float>?
+    /// Until real travel has accrued, the anchor CHASES the landing point at
+    /// this per-frame rate — slow tag-noise wander gets absorbed by the chase
+    /// and never accumulates into "travel"; a deliberate stroke (≳0.3 uv/s)
+    /// outruns it immediately.
+    private let anchorChase: Float = 0.06
 
     /// How far from a white circle's spot still counts as pouring "in one
     /// spot", UV distance. Was 0.12 judged on the RAW position; smoothing
     /// plus this looser bound absorbs real spout-tag noise (reconstructed
     /// positions especially) without letting the pour wander cup-wide.
-    private let positionTolerance: Float = 0.18
+    /// Internal (not private) so `PourGuideOverlay` can draw the SAME zone
+    /// it judges — the ring on screen and the judgment always agree.
+    let positionTolerance: Float = 0.18
     /// Below this the pitcher isn't meaningfully pouring at all, ml/s.
     private let minPourFlow: Float = 2
     /// A white circle only accrues while at least this much milk is actually
     /// FLOATING (φ·flow, ml/s) — pouring hard from too high plunges instead
     /// and would stall silently without the coaching this gates.
     private let minDepositRate: Float = 1
-    /// A sweep step completes when the stroke has reached this fraction of
-    /// its path — the tail end is where the real technique lifts/exits, so
-    /// demanding 100% would fail exactly the correct finishing motion.
-    private let sweepCompleteAt: Float = 0.85
-    /// A sweep must START near the path's beginning (progress ≤ this) — the
-    /// stroke is a motion from the circle outward, not a point to land on.
-    private let sweepStartZone: Float = 0.35
 
     init(choreography: PourChoreography) {
         self.choreography = choreography
@@ -106,8 +114,8 @@ final class PatternGuide: ObservableObject {
         case let .whiteCircle(milkMl, maxHeightMeters):
             judgeWhiteCircle(step: step, uv: uv, pour: pour, surface: surface,
                              goalMl: milkMl, maxHeight: maxHeightMeters, pouring: pouring, dt: dt)
-        case let .sweep(lateralTolerance):
-            judgeSweep(step: step, uv: uv, tolerance: lateralTolerance, pouring: pouring)
+        case let .sweep(travelUV):
+            judgeSweep(step: step, uv: uv, travel: travelUV, pouring: pouring)
         }
     }
 
@@ -139,53 +147,48 @@ final class PatternGuide: ObservableObject {
         let depositRate = surface.phi * surface.flowMlPerSec
         guard depositRate >= minDepositRate else {
             setJudgment(onTrack: false, error: true,
-                        message: "Gently — bring the spout right to the surface so the milk floats.")
+                        message: "Gently — spout right to the surface.")
             return
         }
         setJudgment(onTrack: true, error: false, message: step.cue)
         whiteLaidMl += depositRate * dt
+        holdSeconds += dt
         stepProgress = min(whiteLaidMl / goalMl, 1)
         if whiteLaidMl >= goalMl { completeStep() }
     }
 
-    private func judgeSweep(step: PourStep, uv: SIMD2<Float>, tolerance: Float, pouring: Bool) {
-        guard let end = step.targetUVEnd else {
-            completeStep()   // malformed data (sweep without a path) — don't trap the user
-            return
-        }
+    /// The cut, judged the way the reference sim treats it — it doesn't:
+    /// no line, no direction, no lateral tolerance. The user moves the pour
+    /// however they like; the fluid physics is what makes or ruins the
+    /// pattern. All this observes is that the stream genuinely TRAVELED
+    /// `travel` from where the stroke began.
+    private func judgeSweep(step: PourStep, uv: SIMD2<Float>, travel: Float, pouring: Bool) {
         guard pouring else {
+            // Stream broke: keep the stroke's anchor and progress —
+            // judgment resumes where they left off.
             setJudgment(onTrack: false, error: false, message: step.cue)
             return
         }
-        let start = step.targetUV
-        let path = end - start
-        let lengthSquared = simd_length_squared(path)
-        let progress = lengthSquared > 1e-6
-            ? min(max(simd_dot(uv - start, path) / lengthSquared, 0), 1) : 1
-        let lateral = simd_distance(uv, start + progress * path)
-
-        guard lateral <= tolerance else {
-            setJudgment(onTrack: false, error: true,
-                        message: "Keep the stream over the stroke's line.")
+        guard let start = strokeStartUV else {
+            // First pouring frame of the stroke — wherever the user chose to
+            // begin is the stroke's origin.
+            strokeStartUV = uv
+            setJudgment(onTrack: true, error: false, message: step.cue)
             return
         }
-        if !sweepStarted {
-            guard progress <= sweepStartZone else {
-                // Landed on the path but past its start — the stroke has to be
-                // drawn from the beginning, not joined partway.
-                setJudgment(onTrack: false, error: true,
-                            message: "Start the stroke from its beginning.")
-                return
-            }
-            sweepStarted = true
+        let delta = uv - start
+        let distance = simd_length(delta)
+        if sweepFarthest < 0.02 {
+            // Not genuinely moving yet: the anchor chases the landing point
+            // (see `anchorChase`) so hover jitter never counts as travel.
+            strokeStartUV = start + anchorChase * delta
         }
         setJudgment(onTrack: true, error: false, message: step.cue)
-        // Ratchet: progress along the path only ever counts forward, so noise
-        // can't undo a stroke, and hovering at the end without having drawn
-        // it never completes (sweepStarted gates above).
-        sweepFarthest = max(sweepFarthest, progress)
-        stepProgress = min(sweepFarthest / sweepCompleteAt, 1)
-        if sweepFarthest >= sweepCompleteAt { completeStep() }
+        // Ratchet: travel only ever counts forward, so noise (or a pause)
+        // can't undo a stroke.
+        sweepFarthest = max(sweepFarthest, distance)
+        stepProgress = min(sweepFarthest / travel, 1)
+        if sweepFarthest >= travel { completeStep() }
     }
 
     // MARK: - State transitions
@@ -198,8 +201,9 @@ final class PatternGuide: ObservableObject {
 
     private func completeStep() {
         whiteLaidMl = 0
+        holdSeconds = 0
         sweepFarthest = 0
-        sweepStarted = false
+        strokeStartUV = nil
         currentIndex += 1
         guard currentIndex < choreography.steps.count else {
             finished = true
@@ -209,7 +213,7 @@ final class PatternGuide: ObservableObject {
             return
         }
         stepProgress = 0
-        message = "Nice. Get ready for the next motion."
+        message = "Nice — next motion."
         justAdvancedStep = true
     }
 }

@@ -118,6 +118,69 @@ kernel void k_subtractGradient(texture2d<float, access::read>  p      [[texture(
     velOut.write(float4(v, 0, 0), gid);
 }
 
+// ---- milk stream (port of typescript-fluid-simulator's Latte Scene) ----
+//
+// The pour is NOT an additive splat: per that simulator's `setObstacle`
+// (tool = Milk), the stream is a disc whose interior dye is SET to white and
+// whose surrounding ring has its velocity SET outright — a boundary
+// condition, not an impulse:
+//  - a one-sided JET on the stream's forward side (`v = (dy/r)·latteV` in
+//    the original, for cells past the center only) — the milk column turning
+//    at the surface and flowing out; this is what parts the surface and
+//    carries the blob forward;
+//  - a transverse term following the stream's own motion, edge-weighted
+//    (`u = vx·|dx|/r·latteV`) — what makes a MOVING stream drag a line.
+// The pressure projection that follows redistributes these set velocities
+// through the whole basin; the visible "milk pushes the coffee aside" is the
+// solve's response, not anything painted.
+//
+// Field order/size must match the Swift mirror `MilkStream`.
+struct MilkStreamUniform {
+    float2 center;     // uv
+    float2 motionVel;  // cells/s — the stream's own motion, carried by the disc
+    float2 forward;    // unit; which side the jet flows toward
+    float radius;      // uv
+    float ringWidth;   // uv
+    float latteV;      // cells/s — jet strength (decays with pour time upstream)
+    float motionGain;  // unitless — transverse (stroke-drag) gain, their latteV factor
+};
+
+kernel void k_milkStream(texture2d<float, access::read>  velIn  [[texture(0)]],
+                         texture2d<float, access::write> velOut [[texture(1)]],
+                         texture2d<float, access::read>  dyeIn  [[texture(2)]],
+                         texture2d<float, access::write> dyeOut [[texture(3)]],
+                         constant MilkStreamUniform &m [[buffer(0)]],
+                         uint2 gid [[thread_position_in_grid]])
+{
+    uint w = velOut.get_width(), h = velOut.get_height();
+    if (gid.x >= w || gid.y >= h) return;
+    float2 uv = (float2(gid) + 0.5) / float2(w, h);
+    float4 vel = velIn.read(gid);
+    float4 dye = dyeIn.read(gid);
+
+    float2 d = uv - m.center;
+    float dist = length(d);
+    float rimDist = length(uv - 0.5);
+    if (dist < m.radius + m.ringWidth && rimDist < 0.49) {
+        // ONE formula for the disc interior AND the ring, per the reference:
+        // its `aroundObstacle` region includes the interior, and there is no
+        // separate "disc carries the cursor velocity" — stream motion enters
+        // ONLY through the transverse term (their `vx`) and the white trail
+        // the moving disc stamps. The jet term never reads the stream's
+        // motion at all (their `vy` is never consumed).
+        float2 fwd = m.forward;
+        float2 perp = float2(-fwd.y, fwd.x);
+        float a = dot(d, fwd);
+        float t = dot(d, perp);
+        float2 v = perp * (dot(m.motionVel, perp) * (fabs(t) / m.radius) * m.motionGain);
+        if (a > 0.0) v += fwd * ((a / m.radius) * m.latteV);
+        vel.xy = v;                  // SET, not add — a boundary condition
+        if (dist < m.radius) dye.x = 1.0;   // the stream itself is white milk
+    }
+    velOut.write(vel, gid);
+    dyeOut.write(dye, gid);
+}
+
 // Rayleigh friction + wall no-slip. A latte surface is a THIN layer of
 // near-paste microfoam: bottom drag and foam viscosity kill momentum within
 // ~a second, and the cup wall pins velocity to zero. Without this the solver
@@ -135,12 +198,12 @@ kernel void k_dampVelocity(texture2d<float, access::read>  vel [[texture(0)]],
     out.write(vel.read(gid) * damping * wall, gid);
 }
 
-// ---- procedural surface detail (crema mottle, foam grain) ----
+// ---- procedural crema texture ----
 //
 // Cheap hash-based value noise, evaluated in cup UV so the detail is pinned
-// to the cup, not the screen. The dye field advects OVER this static detail;
-// visually that reads fine (crema mottling is quasi-static during a pour)
-// and costs no extra textures or assets.
+// to the cup. Applied ONLY to the espresso side of the color ramp below —
+// the milk stays flat per the reference sim (relief/grain on the white is
+// what read as whipped cream).
 
 static inline float hash21(float2 p) {
     p = fract(p * float2(123.34, 345.45));
@@ -251,42 +314,21 @@ fragment float4 f_latte(VOut in [[stage_in]],
     float r = length(c);
     float d = clamp(dye.sample(linSmp, in.uv).x, 0.0, 1.0);
 
-    // Crema: not one flat brown — broad fbm marbling between a dark and a
-    // lighter reddish tone plus a fine speckle, darkening toward the wall
-    // (real crema collects a darker ring at the cup edge).
+    // Port of typescript-fluid-simulator's latte palette (FluidDraw.ts):
+    // warm tan espresso RGB(193,122,61) and a 2.8× contrast curve around
+    // 0.5 — dye below ~0.32 reads fully espresso, above ~0.68 fully white.
+    // The MILK stays flat on purpose (relief/grain/specular on the white is
+    // what read as whipped cream; the crisp contrast curve is what reads as
+    // poured milk) — but the CREMA is texturized: fbm marbling + fine
+    // speckle modulating the tan, with a subtle darker ring at the wall,
+    // fading out as the milk takes over.
+    const float3 espressoBase = float3(0.757, 0.478, 0.239);
     float marble = fbm(in.uv * 22.0);
     float speck  = vnoise(in.uv * 160.0);
-    float3 crema = mix(float3(0.26, 0.155, 0.085), float3(0.45, 0.28, 0.15),
-                       clamp(0.2 + 0.8 * marble + 0.18 * (speck - 0.5), 0.0, 1.0));
-    crema *= 1.0 - 0.22 * smoothstep(0.36, 0.5, r);
-
-    // Milk: microfoam, not paint — a near-white base dimmed by two scales of
-    // bubble grain so it reads matte and slightly porous.
-    float grain = 0.5 * vnoise(in.uv * 300.0) + 0.5 * vnoise(in.uv * 120.0);
-    float3 foam = float3(0.985, 0.965, 0.93) - float3(0.10, 0.09, 0.07) * grain;
-
-    // Thin milk over crema is warm tan (milk mixing INTO the crema), never
-    // gray — a two-stop ramp instead of one straight crema→white mix.
-    float3 cream = float3(0.78, 0.62, 0.45);
-    float foamMask = smoothstep(0.30, 0.85, d);
-    float3 latte = mix(crema, cream, smoothstep(0.04, 0.35, d));
-    latte = mix(latte, foam, foamMask);
-
-    // Relief: treat the dye field as a height map (foam sits proud of the
-    // liquid). A fixed key light from the screen's upper-left shades the
-    // pattern's edges so the white reads as a raised layer, plus a wet
-    // specular sheen that's strong on the glossy liquid crema and nearly
-    // gone on settled matte foam. Purely cosmetic — no physics reads this.
-    float2 texel = float2(1.0) / float2(dye.get_width(), dye.get_height());
-    float dR = dye.sample(linSmp, in.uv + float2(texel.x, 0)).x;
-    float dL = dye.sample(linSmp, in.uv - float2(texel.x, 0)).x;
-    float dT = dye.sample(linSmp, in.uv + float2(0, texel.y)).x;
-    float dB = dye.sample(linSmp, in.uv - float2(0, texel.y)).x;
-    float3 nrm = normalize(float3(dL - dR, dB - dT, 0.55));
-    float3 lightDir = normalize(float3(-0.4, -0.55, 0.73));
-    latte *= 0.88 + 0.24 * max(dot(nrm, lightDir), 0.0);
-    float spec = pow(max(dot(normalize(lightDir + float3(0, 0, 1)), nrm), 0.0), 24.0);
-    latte += spec * mix(0.09, 0.02, foamMask);
+    float3 espresso = espressoBase * (0.82 + 0.30 * marble + 0.08 * (speck - 0.5));
+    espresso *= 1.0 - 0.12 * smoothstep(0.38, 0.5, r);
+    float lightness = clamp((d - 0.5) * 2.8 + 0.5, 0.0, 1.0);
+    float3 latte = mix(espresso, float3(1.0), lightness);
 
     // Paintable coffee disc now fills to the CupSpace rim (r = 0.5 in UV);
     // ~0.008-wide smoothstep at the edge for AA, no wall ring.
