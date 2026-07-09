@@ -22,6 +22,8 @@
 	<string>1</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Latte Art uses the camera to watch your cup and track how you pour, so it can simulate and coach your latte art in real time.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Latte Art saves photos of your finished latte art to your photo library when you tap Save.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

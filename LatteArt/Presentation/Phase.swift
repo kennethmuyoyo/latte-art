@@ -44,6 +44,21 @@ enum LattePattern: String, CaseIterable, Identifiable {
         }
     }
 
+    /// The full pouring technique, shown on the Pre-Guide screen before
+    /// practice begins. Matches the choreography in `PatternLibrary` — the
+    /// blend/base phase is skipped (practice starts on a pre-filled base, see
+    /// `LevelModel.baseFillFraction`), so these start at the drawing motion.
+    var instructions: String {
+        switch self {
+        case .heart:
+            return "Lower the pitcher close to the surface and pour steadily in one spot until a white circle forms. Then lift the pitcher slightly and pour through the center of the circle to create the heart shape."
+        case .tulip:
+            return "The tulip is made by stacking several small pours on top of one another. Lower the pitcher close to the surface and make a short pour to create the first petal. Repeat this, each pour slightly pushing into the previous one. Finish by pulling the pitcher through the center to connect all the layers into a tulip."
+        case .rosetta:
+            return "The rosetta combines a gentle side-to-side motion with a steady backward movement. Lower the pitcher close to the surface, then gently wiggle it left and right while slowly moving backward to create the leaf-like layers. Once the pattern is complete, stop the wiggle and pull the pitcher through the center to form the stem."
+        }
+    }
+
     /// Asset catalog image set name — see `Assets.xcassets`.
     var thumbnailAssetName: String {
         switch self {

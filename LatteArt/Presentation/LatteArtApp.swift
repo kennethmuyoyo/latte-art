@@ -9,6 +9,8 @@ import SwiftUI
 // ============================================================================
 @main
 struct LatteArtApp: App {
+    @Environment(\.scenePhase) private var scenePhase
+
     #if !targetEnvironment(simulator)
     @StateObject private var model = AppFlowModel()
     #endif
@@ -23,6 +25,11 @@ struct LatteArtApp: App {
                 .persistentSystemOverlays(.hidden)
                 .statusBarHidden(true)
             #endif
+        }
+        // The user's hands are on the pitcher, not the screen — keep the
+        // display awake while the app is in the foreground.
+        .onChange(of: scenePhase) { _, phase in
+            UIApplication.shared.isIdleTimerDisabled = (phase == .active)
         }
     }
 }

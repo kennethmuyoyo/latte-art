@@ -76,6 +76,7 @@ final class AppFlowModel: ObservableObject {
     /// straight back to Pattern Selection. Distinct from the natural
     /// completion path (`finishPractice()` → Result) below.
     func exitPractice() {
+        clearPour()
         guide = nil
         selectedPattern = nil
         phase = .patternSelect
@@ -88,20 +89,30 @@ final class AppFlowModel: ObservableObject {
 
     /// Result screen's "Try Again" — restarts the same pattern.
     func tryAgain() {
+        clearPour()
         beginPractice()
     }
 
     /// Result screen's "New Pattern".
     func backToPatterns() {
+        clearPour()
         guide = nil
         selectedPattern = nil
         phase = .patternSelect
     }
 
+    /// Wipe the painted latte art (dye + fill level) so the next session —
+    /// whether a retry or a different pattern — starts on a clean canvas
+    /// instead of on top of the previous attempt. The reset is applied by the
+    /// sim on its next frame (see `SimulationController.requestReset`).
+    private func clearPour() {
+        coordinator?.controller.requestReset()
+    }
+
     private func wire(_ coordinator: CameraPourCoordinator) {
-        coordinator.controller.onAdvance = { [weak self] dt, pour in
+        coordinator.controller.onAdvance = { [weak self] dt, pour, surface in
             guard let self, self.phase == .practice, let guide = self.guide else { return }
-            guide.advance(dt: dt, pour: pour)
+            guide.advance(dt: dt, pour: pour, surface: surface)
             if guide.finished {
                 DispatchQueue.main.async { self.finishPractice() }
             }

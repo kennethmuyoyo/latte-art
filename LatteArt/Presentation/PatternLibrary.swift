@@ -1,14 +1,12 @@
 import simd
 
 /// The 3 pattern choreographies, grounded in the real free-pour technique for
-/// each — not arbitrary waypoints. Coaching `cue` text is verbatim from the
-/// design spec's "During Practice" copy. Exact UV positions/timings are still
-/// a reasonable first pass, NOT measured against real pour footage — expect
-/// to retune these once testing on the physical rig (same category as the
-/// tilt/occlusion constants elsewhere in Sensor/Simulation) — but the SHAPE
-/// of each choreography (which steps are holds vs. sweeps) now matches how
-/// each pattern is actually poured, which the previous "3 fixed dots for
-/// every pattern" version didn't.
+/// each. The blend/base ("mixing") phase is deliberately skipped — practice
+/// goes straight into drawing the art on a pre-filled base (see
+/// `LevelModel.baseFillFraction`). Steps complete on surface-derived goals
+/// (white actually laid, a stroke actually traversed — see `StepGoal`), never
+/// on timers. Exact UV positions/quantities are a reasonable first pass, NOT
+/// measured against real pour footage — expect to retune on the physical rig.
 enum PatternLibrary {
     static func choreography(for pattern: LattePattern) -> PourChoreography {
         switch pattern {
@@ -18,47 +16,58 @@ enum PatternLibrary {
         }
     }
 
-    /// Real technique: pour into the CENTER to build a white base under the
-    /// crema; once the cup is nearly full, hold steady at that same center
-    /// point, close to the surface, letting the white circle grow; then, in
-    /// ONE continuous motion, pull straight back toward the near rim,
-    /// speeding up/lifting as you exit — that pull is what actually draws
-    /// the heart's point, and it's a SWEEP, not a dot to aim at.
+    /// How close to the surface "close to the surface" is, meters above the
+    /// rim plane. Above this the milk plunges instead of floating (and the
+    /// coaching says to lower the pitcher).
+    private static let drawHeight: Float = 0.05
+
+    /// Real technique (blend phase skipped): hold the pour in ONE spot at the
+    /// center, close to the surface — the stream's own forward carry drifts
+    /// the growing circle ahead (see `SimulationController.streamCarry`) —
+    /// then cut back straight THROUGH the whole circle toward the near rim.
+    /// The cut starts on the far side of where the circle has drifted, so the
+    /// stroke pierces it completely and folds the lobes into the heart.
     private static let heart = PourChoreography(pattern: .heart, steps: [
-        PourStep(targetUV: SIMD2(0.5, 0.5), direction: .zero, duration: 3.5,
-                 cue: "Pour into the center to build a white base under the crema."),
-        PourStep(targetUV: SIMD2(0.5, 0.5), direction: .zero, duration: 1.0,
-                 cue: "Hold steady at the center, close to the surface — let the white circle grow."),
-        PourStep(targetUV: SIMD2(0.5, 0.5), direction: SIMD2(0, 1), duration: 1.4,
-                 cue: "In one motion, pull straight back toward the rim nearest you — speed up and lift as you exit.",
+        PourStep(targetUV: SIMD2(0.5, 0.5),
+                 goal: .whiteCircle(milkMl: 30, maxHeightMeters: drawHeight),
+                 cue: "Pour steadily in one spot at the center, close to the surface, until a white circle forms."),
+        PourStep(targetUV: SIMD2(0.5, 0.38),
+                 goal: .sweep(lateralTolerance: 0.15),
+                 cue: "Lift slightly and cut straight back through the circle, toward the rim nearest you.",
                  targetUVEnd: SIMD2(0.5, 0.88)),
     ])
 
-    /// Real technique: a small held pour near the center, a brief pause
-    /// (lift/break the stream) without moving off that spot, a second held
-    /// pour stacked CLOSER to the rim (pushes the first circle out into a
-    /// ring, the "stack" look), then the same single continuous pull-through
-    /// to the near rim to finish/cap it.
+    /// Real technique: stack several short pours on top of one another, each
+    /// pushing into the previous one, then pull through the center to connect
+    /// the layers.
     private static let tulip = PourChoreography(pattern: .tulip, steps: [
-        PourStep(targetUV: SIMD2(0.5, 0.45), direction: .zero, duration: 1.4, cue: "Pour."),
-        PourStep(targetUV: SIMD2(0.5, 0.45), direction: .zero, duration: 0.6, cue: "Pause."),
-        PourStep(targetUV: SIMD2(0.5, 0.62), direction: .zero, duration: 1.2, cue: "Stack."),
-        PourStep(targetUV: SIMD2(0.5, 0.62), direction: SIMD2(0, 1), duration: 1.2, cue: "Finish.",
+        PourStep(targetUV: SIMD2(0.5, 0.42),
+                 goal: .whiteCircle(milkMl: 18, maxHeightMeters: drawHeight),
+                 cue: "Close to the surface, make a short pour — the first petal."),
+        PourStep(targetUV: SIMD2(0.5, 0.56),
+                 goal: .whiteCircle(milkMl: 14, maxHeightMeters: drawHeight),
+                 cue: "Short pour again, slightly closer to you — push into the first petal."),
+        PourStep(targetUV: SIMD2(0.5, 0.68),
+                 goal: .whiteCircle(milkMl: 10, maxHeightMeters: drawHeight),
+                 cue: "One more small pour, pushing into the last one."),
+        PourStep(targetUV: SIMD2(0.5, 0.68),
+                 goal: .sweep(lateralTolerance: 0.15),
+                 cue: "Pull the pitcher through the center to connect the layers into a tulip.",
                  targetUVEnd: SIMD2(0.5, 0.88)),
     ])
 
-    /// Real technique: the wiggle ISN'T stationary — you sway the pitcher
-    /// side to side WHILE steadily pulling it backward toward the near rim,
-    /// laying down the fern's layered leaves as you go, then finish with a
-    /// straight (non-wiggling) pull through the middle to define the stem.
-    /// The first step's `wiggle` flag is display-only now (the guidance is
-    /// text, no on-screen sway) — the `targetUVEnd` sweep is what still
-    /// matters, since it drives on-track judgment.
+    /// Real technique: wiggle side to side while steadily moving backward to
+    /// lay the leaf layers (the wiggle sways AROUND the backward path, hence
+    /// the wide lateral tolerance), then stop the wiggle and pull straight
+    /// through the middle to form the stem.
     private static let rosetta = PourChoreography(pattern: .rosetta, steps: [
-        PourStep(targetUV: SIMD2(0.5, 0.35), direction: SIMD2(0, 1), duration: 3.0, cue: "Start your wiggle.",
-                 wiggle: true, targetUVEnd: SIMD2(0.5, 0.65)),
-        PourStep(targetUV: SIMD2(0.5, 0.65), direction: .zero, duration: 0.8, cue: "Slow down."),
-        PourStep(targetUV: SIMD2(0.5, 0.65), direction: SIMD2(0, 1), duration: 1.2, cue: "Pull through.",
-                 targetUVEnd: SIMD2(0.5, 0.88)),
+        PourStep(targetUV: SIMD2(0.5, 0.35),
+                 goal: .sweep(lateralTolerance: 0.25),
+                 cue: "Close to the surface, gently wiggle left and right while slowly moving backward.",
+                 targetUVEnd: SIMD2(0.5, 0.7)),
+        PourStep(targetUV: SIMD2(0.5, 0.7),
+                 goal: .sweep(lateralTolerance: 0.15),
+                 cue: "Stop the wiggle and pull straight through the middle to form the stem.",
+                 targetUVEnd: SIMD2(0.5, 0.15)),
     ])
 }

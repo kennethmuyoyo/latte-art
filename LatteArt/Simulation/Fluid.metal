@@ -135,6 +135,40 @@ kernel void k_dampVelocity(texture2d<float, access::read>  vel [[texture(0)]],
     out.write(vel.read(gid) * damping * wall, gid);
 }
 
+// ---- procedural surface detail (crema mottle, foam grain) ----
+//
+// Cheap hash-based value noise, evaluated in cup UV so the detail is pinned
+// to the cup, not the screen. The dye field advects OVER this static detail;
+// visually that reads fine (crema mottling is quasi-static during a pour)
+// and costs no extra textures or assets.
+
+static inline float hash21(float2 p) {
+    p = fract(p * float2(123.34, 345.45));
+    p += dot(p, p + 34.345);
+    return fract(p.x * p.y);
+}
+
+static inline float vnoise(float2 p) {
+    float2 i = floor(p), f = fract(p);
+    float2 u = f * f * (3.0 - 2.0 * f);
+    float a = hash21(i);
+    float b = hash21(i + float2(1, 0));
+    float c = hash21(i + float2(0, 1));
+    float d = hash21(i + float2(1, 1));
+    return mix(mix(a, b, u.x), mix(c, d, u.x), u.y);
+}
+
+// 3 octaves is enough for crema marbling; more is invisible at cup size.
+static inline float fbm(float2 p) {
+    float v = 0.0, a = 0.5;
+    for (int i = 0; i < 3; i++) {
+        v += a * vnoise(p);
+        p = p * 2.03 + 17.7;
+        a *= 0.5;
+    }
+    return v;
+}
+
 // ---- display: dye texture -> latte surface (brown canvas, white milk) ----
 //
 // The quad is placed by CupPose (via CupVertex, computed in FluidBlitter) so
@@ -181,32 +215,133 @@ struct OcclusionUniform {
     float2 uv1;   float radius1;   float active1;
 };
 
+// Per-pixel scene-depth occlusion (LiDAR devices) — the CLEAN path. ARKit's
+// sceneDepth gives the real measured depth of the scene at every pixel; the
+// fragment shader compares it against the cup plane's own depth at that same
+// pixel and hides the surface exactly where the real world (pitcher, hand) is
+// measurably in front of the plane. That yields the pitcher's true silhouette
+// rather than a circle around a tag. Field order/size must match the Swift
+// mirror in FluidBlitter.swift.
+struct DepthOcclusionUniform {
+    float4x4 inverseViewProjection;  // clip -> world, for unprojecting pixels to rays
+    float3 cameraPos;                // world
+    float3 cameraForward;            // world, unit; ARKit depth = meters along this axis
+    float3 planePoint;               // tracked cup plane (rim circle center)
+    float3 planeNormal;              // unit
+    float4 viewToImage;              // CGAffineTransform a,b,c,d: view UV -> depth-map UV
+    float2 viewToImageT;             // tx, ty
+    float2 drawableSize;             // render-target pixels, normalizes in.pos
+    float enabled;                   // 0 = use the tag-circle fallback below
+    float margin;                    // meters the scene must be nearer than the plane to occlude
+    float2 pad;
+};
+
+// Depth is r32Float — not linearly filterable on all GPUs, and blending
+// depths across an object edge invents depths that exist nowhere; nearest is
+// both safe and correct here.
+constexpr sampler depthSmp(coord::normalized, address::clamp_to_edge, filter::nearest);
+
 fragment float4 f_latte(VOut in [[stage_in]],
                         texture2d<float> dye [[texture(0)]],
-                        constant OcclusionUniform &occl [[buffer(0)]])
+                        texture2d<float> sceneDepth [[texture(1)]],
+                        constant OcclusionUniform &occl [[buffer(0)]],
+                        constant DepthOcclusionUniform &depthU [[buffer(1)]])
 {
     float2 c = in.uv - 0.5;
     float r = length(c);
     float d = clamp(dye.sample(linSmp, in.uv).x, 0.0, 1.0);
-    float3 crema = float3(0.32, 0.19, 0.10);
-    float3 milk  = float3(0.97, 0.96, 0.93);
-    float3 latte = mix(crema, milk, d);
+
+    // Crema: not one flat brown — broad fbm marbling between a dark and a
+    // lighter reddish tone plus a fine speckle, darkening toward the wall
+    // (real crema collects a darker ring at the cup edge).
+    float marble = fbm(in.uv * 22.0);
+    float speck  = vnoise(in.uv * 160.0);
+    float3 crema = mix(float3(0.26, 0.155, 0.085), float3(0.45, 0.28, 0.15),
+                       clamp(0.2 + 0.8 * marble + 0.18 * (speck - 0.5), 0.0, 1.0));
+    crema *= 1.0 - 0.22 * smoothstep(0.36, 0.5, r);
+
+    // Milk: microfoam, not paint — a near-white base dimmed by two scales of
+    // bubble grain so it reads matte and slightly porous.
+    float grain = 0.5 * vnoise(in.uv * 300.0) + 0.5 * vnoise(in.uv * 120.0);
+    float3 foam = float3(0.985, 0.965, 0.93) - float3(0.10, 0.09, 0.07) * grain;
+
+    // Thin milk over crema is warm tan (milk mixing INTO the crema), never
+    // gray — a two-stop ramp instead of one straight crema→white mix.
+    float3 cream = float3(0.78, 0.62, 0.45);
+    float foamMask = smoothstep(0.30, 0.85, d);
+    float3 latte = mix(crema, cream, smoothstep(0.04, 0.35, d));
+    latte = mix(latte, foam, foamMask);
+
+    // Relief: treat the dye field as a height map (foam sits proud of the
+    // liquid). A fixed key light from the screen's upper-left shades the
+    // pattern's edges so the white reads as a raised layer, plus a wet
+    // specular sheen that's strong on the glossy liquid crema and nearly
+    // gone on settled matte foam. Purely cosmetic — no physics reads this.
+    float2 texel = float2(1.0) / float2(dye.get_width(), dye.get_height());
+    float dR = dye.sample(linSmp, in.uv + float2(texel.x, 0)).x;
+    float dL = dye.sample(linSmp, in.uv - float2(texel.x, 0)).x;
+    float dT = dye.sample(linSmp, in.uv + float2(0, texel.y)).x;
+    float dB = dye.sample(linSmp, in.uv - float2(0, texel.y)).x;
+    float3 nrm = normalize(float3(dL - dR, dB - dT, 0.55));
+    float3 lightDir = normalize(float3(-0.4, -0.55, 0.73));
+    latte *= 0.88 + 0.24 * max(dot(nrm, lightDir), 0.0);
+    float spec = pow(max(dot(normalize(lightDir + float3(0, 0, 1)), nrm), 0.0), 24.0);
+    latte += spec * mix(0.09, 0.02, foamMask);
+
     // Paintable coffee disc now fills to the CupSpace rim (r = 0.5 in UV);
     // ~0.008-wide smoothstep at the edge for AA, no wall ring.
     float inside = smoothstep(0.5, 0.492, r);
 
-    // Cut a soft hole at each depth-verified-closer pitcher tag position, so
-    // the real pitcher (genuinely nearer the camera than the cup surface
-    // there) visually wins over the disc instead of the disc always drawing
-    // on top of it.
     float occlusion = 1.0;
-    if (occl.active0 > 0.5) {
-        float dist0 = length(in.uv - occl.uv0);
-        occlusion = min(occlusion, smoothstep(occl.radius0 * 0.7, occl.radius0, dist0));
-    }
-    if (occl.active1 > 0.5) {
-        float dist1 = length(in.uv - occl.uv1);
-        occlusion = min(occlusion, smoothstep(occl.radius1 * 0.7, occl.radius1, dist1));
+    if (depthU.enabled > 0.5) {
+        // Per-pixel occlusion from the real depth map: the true silhouette
+        // of whatever is actually in front of the cup plane at this pixel.
+        float2 viewUV = in.pos.xy / depthU.drawableSize;
+        float2 imgUV = float2(
+            depthU.viewToImage.x * viewUV.x + depthU.viewToImage.z * viewUV.y + depthU.viewToImageT.x,
+            depthU.viewToImage.y * viewUV.x + depthU.viewToImage.w * viewUV.y + depthU.viewToImageT.y);
+        if (all(imgUV >= 0.0) && all(imgUV <= 1.0)) {
+            float sceneZ = sceneDepth.sample(depthSmp, imgUV).x;   // meters; <=0 means no data
+            if (sceneZ > 0.0) {
+                // The cup plane's depth at THIS pixel: unproject the pixel to
+                // a world ray, intersect with the tracked plane, measure the
+                // hit along the camera-forward axis — the same z-depth metric
+                // ARKit's depth map reports.
+                float2 ndc = float2(2.0 * viewUV.x - 1.0, 1.0 - 2.0 * viewUV.y);
+                float4 wp = depthU.inverseViewProjection * float4(ndc, 0.5, 1.0);
+                float3 rayDir = normalize(wp.xyz / wp.w - depthU.cameraPos);
+                float denom = dot(rayDir, depthU.planeNormal);
+                if (abs(denom) > 1e-5) {
+                    float t = dot(depthU.planePoint - depthU.cameraPos, depthU.planeNormal) / denom;
+                    if (t > 0.0) {
+                        float3 hit = depthU.cameraPos + t * rayDir;
+                        float surfaceZ = dot(hit - depthU.cameraPos, depthU.cameraForward);
+                        // Fully opaque while the scene sits at/behind the
+                        // plane (the liquid, the rim), fully hidden once it's
+                        // clearly in front (the pitcher) — only a 1 cm soft
+                        // band between, so the cut is a hard silhouette, not
+                        // a translucent fade. `margin` absorbs plane-tracking
+                        // noise so the rim itself never flickers.
+                        occlusion = smoothstep(surfaceZ - depthU.margin - 0.01,
+                                               surfaceZ - depthU.margin, sceneZ);
+                    }
+                }
+            }
+        }
+    } else {
+        // Fallback (no LiDAR): hard-edged holes at each depth-verified-closer
+        // pitcher tag, depth-tested on the Swift side (CameraPourCoordinator).
+        // Thin ~3% AA band only — a wider fade reads as the surface turning
+        // TRANSPARENT around the pitcher rather than the pitcher sitting on
+        // top of an opaque surface.
+        if (occl.active0 > 0.5) {
+            float dist0 = length(in.uv - occl.uv0);
+            occlusion = min(occlusion, smoothstep(occl.radius0 * 0.97, occl.radius0, dist0));
+        }
+        if (occl.active1 > 0.5) {
+            float dist1 = length(in.uv - occl.uv1);
+            occlusion = min(occlusion, smoothstep(occl.radius1 * 0.97, occl.radius1, dist1));
+        }
     }
 
     // Alpha carries coverage so the blitter (sourceAlpha/oneMinusSourceAlpha)

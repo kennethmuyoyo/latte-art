@@ -39,6 +39,9 @@ targets:
         NSCameraUsageDescription: >-
           Latte Art uses the camera to watch your cup and track how you pour,
           so it can simulate and coach your latte art in real time.
+        NSPhotoLibraryAddUsageDescription: >-
+          Latte Art saves photos of your finished latte art to your photo
+          library when you tap Save.
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.signvrse.latteart

@@ -81,6 +81,15 @@ final class AprilTagTracker {
             var world: [Int: simd_float4x4] = [:]
             if let detections = try? detector.detect(pixelBuffer: pixelBuffer) {
                 for d in detections {
+                    // Quality gate: the detector happily decodes background
+                    // texture into phantom tags (seen in practice as the
+                    // pitcher reading "detected" with only the cup in the
+                    // scene). Real, well-lit tags decode with zero corrected
+                    // error bits and a healthy decision margin; phantom
+                    // decodes rely on bit correction and/or scrape by with a
+                    // low margin, so require a clean decode (hamming == 0)
+                    // and a modest margin floor.
+                    guard d.hamming == 0, d.decisionMargin >= 35 else { continue }
                     let size = AprilTagRoles.cupTagIDs.contains(d.id)
                         ? AprilTagRoles.cupTagSizeMeters : AprilTagRoles.pitcherTagSizeMeters
                     guard let pose = d.estimatePose(intrinsics: intrinsics, tagSize: size) else { continue }

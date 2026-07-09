@@ -70,6 +70,20 @@ final class AprilTagPourSource: PourSource {
             }
         let tilt = Self.tilt(spout: spout, spoutTransform: spoutTransform, referenceTransform: referenceTransform)
 
+        // Stream forward direction: reference → spout, projected into cup UV.
+        // The spout leads the pitcher body, so the milk lands angled this way
+        // — reported raw (a geometric measurement); Simulation owns how much
+        // forward carry it produces (see `PourSample.streamDirectionUV`).
+        var streamDirection: SIMD2<Float>? = nil
+        if let referenceTransform {
+            let reference = SIMD3<Float>(referenceTransform.columns.3.x,
+                                         referenceTransform.columns.3.y,
+                                         referenceTransform.columns.3.z)
+            let d = cup.cupUV(of: spout) - cup.cupUV(of: reference)
+            let len = simd_length(d)
+            if len > 1e-4 { streamDirection = d / len }
+        }
+
         let uv = CupSpace.clampToCup(cup.cupUV(of: spout))
         // Real 3D translation is already available from tag pose estimation,
         // so pour height is this direct plane-relative distance rather than
@@ -89,6 +103,7 @@ final class AprilTagPourSource: PourSource {
         sample.layingMilk = laying
         sample.tiltRadians = tilt
         sample.heightAboveRimMeters = height
+        sample.streamDirectionUV = streamDirection
         current = sample
         lastGoodSampleTime = time
         onSample?(sample)

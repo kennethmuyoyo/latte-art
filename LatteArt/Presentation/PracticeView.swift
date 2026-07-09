@@ -110,6 +110,19 @@ private struct StepGuideCard: View {
                     .appText(.bodyBold)
                     .foregroundStyle(tint)
                     .fixedSize(horizontal: false, vertical: true)
+
+                // Live completion of the current step's goal (white laid /
+                // stroke drawn) — progress is real and surface-derived, so
+                // show it: "am I getting anywhere?" was invisible before.
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(.white.opacity(0.15))
+                        Capsule().fill(Palette.correct)
+                            .frame(width: geo.size.width * CGFloat(guide.stepProgress))
+                    }
+                }
+                .frame(height: 5)
+                .animation(.linear(duration: 0.15), value: guide.stepProgress)
             }
         }
         .animation(.easeInOut(duration: 0.2), value: guide.message)

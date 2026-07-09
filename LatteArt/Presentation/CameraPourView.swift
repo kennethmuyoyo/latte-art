@@ -10,6 +10,7 @@
 // lands; the ARSession-driving belongs in Sensor/Presentation long-term.
 
 import ARKit
+import CoreVideo
 import QuartzCore
 import SceneKit
 import SwiftUI
@@ -91,6 +92,32 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
     /// the representable on layout.
     var viewportSize: CGSize = .zero
 
+    /// The live camera view, held only for photo capture (`captureArtPhoto`) —
+    /// set by `ARCameraContainer.makeUIView`, owned by SwiftUI.
+    weak var arView: ARSCNView?
+
+    /// Photograph the finished art as the user sees it: the live camera frame
+    /// (real cup) with the painted sim surface composited on top. Main thread;
+    /// completion is called on the main thread, `nil` only if the camera view
+    /// isn't up. If the overlay readback fails the camera-only shot is still
+    /// returned rather than nothing.
+    func captureArtPhoto(_ completion: @escaping (UIImage?) -> Void) {
+        guard let arView else { completion(nil); return }
+        let camera = arView.snapshot()
+        blitter.captureOverlay { overlay in
+            guard let overlay else { completion(camera); return }
+            // Both layers are full-screen and screen-aligned (see AppFlowView),
+            // so drawing them into the same rect — regardless of each image's
+            // native pixel scale — reproduces exactly what's on screen.
+            let composed = UIGraphicsImageRenderer(size: camera.size).image { _ in
+                let rect = CGRect(origin: .zero, size: camera.size)
+                camera.draw(in: rect)
+                overlay.draw(in: rect)
+            }
+            completion(composed)
+        }
+    }
+
     // Keep the disc + ring visible for a short beat after the cup was last
     // placed, so a one-frame tag dropout doesn't blink them off.
     private var lastCupSeenTime: TimeInterval = 0
@@ -144,6 +171,13 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
     /// than locking in a single early (possibly noisy) snapshot.
     private var cupRegistration: CupRegistration?
 
+    /// `true` while per-pixel LiDAR scene-depth occlusion is feeding the
+    /// shader (see `updateSceneDepth`) — the tag-circle fallback holes are
+    /// skipped then, and the HUD shows which occlusion path is live.
+    @Published private(set) var sceneDepthActive = false
+    /// Wraps ARKit's depth CVPixelBuffers as Metal textures with zero copies.
+    private var depthTextureCache: CVMetalTextureCache?
+
     init?(context: MetalContext) {
         guard let sim = FluidSimulation(context: context),
               let blitter = FluidBlitter(context: context) else { return nil }
@@ -153,6 +187,7 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
         self.blitter = blitter
         self.tracker = try? AprilTagTracker()
         super.init()
+        CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, context.device, nil, &depthTextureCache)
         trackerReady = (tracker != nil)
         blitter.drawsDisc = false            // stay hidden until a cup is tracked
         controller.attach(source: source)    // same push path touch/demo use
@@ -161,6 +196,11 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
     // MARK: - ARSessionDelegate
 
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
+        // Per-pixel occlusion runs off EVERY ARKit frame (the depth map and
+        // camera pose must stay in lockstep with the live image), not just
+        // the frames the tag detector accepts — `tracker.process` drops
+        // frames while a detection is in flight.
+        updateSceneDepth(frame: frame)
         guard let tracker else { return }
         // ARKit camera-local axes are X-right, Y-up, Z-backward; the cup's
         // in-plane basis wants camera-right and camera-DOWN in world space.
@@ -174,6 +214,72 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
         tracker.process(frame: frame) { [weak self] world in
             self?.ingest(world: world, camera: camera, right: right, down: down, time: time)
         }
+    }
+
+    // MARK: - Per-pixel scene-depth occlusion (main thread)
+
+    /// Feed the shader everything it needs to hide the surface at exactly
+    /// the pixels where the real scene is in front of the cup plane — the
+    /// pitcher's true measured silhouette, not a circle around a tag.
+    /// Requires LiDAR (`sceneDepth` frame semantics, enabled in
+    /// `ARCameraContainer`); on non-LiDAR devices `frame.sceneDepth` stays
+    /// nil and the tag-circle fallback in `ingest()` takes over. Prefers
+    /// `smoothedSceneDepth` — the raw map flickers at object edges.
+    private func updateSceneDepth(frame: ARFrame) {
+        guard let cache = depthTextureCache,
+              let depthMap = (frame.smoothedSceneDepth ?? frame.sceneDepth)?.depthMap,
+              let planePoint = smoothedWorldCenter, let planeNormal = smoothedWorldNormal,
+              viewportSize.width > 1 else {
+            sceneDepthActive = false
+            blitter.clearSceneDepth()
+            return
+        }
+        var cvTextureOut: CVMetalTexture?
+        CVMetalTextureCacheCreateTextureFromImage(
+            kCFAllocatorDefault, cache, depthMap, nil, .r32Float,
+            CVPixelBufferGetWidth(depthMap), CVPixelBufferGetHeight(depthMap), 0, &cvTextureOut)
+        guard let cvTexture = cvTextureOut, let texture = CVMetalTextureGetTexture(cvTexture) else {
+            sceneDepthActive = false
+            blitter.clearSceneDepth()
+            return
+        }
+
+        // Same orientation/viewport conventions as `cupPose(from:)` — the app
+        // is locked to landscapeRight, and `viewportSize` is the same
+        // points-based size the overlay is laid out with. The display
+        // transform maps normalized image coords to normalized view coords;
+        // the shader needs the opposite direction (its fragments live in
+        // view space, the depth map in image space), hence `.inverted()`.
+        let camera = frame.camera
+        let viewMatrix = camera.viewMatrix(for: .landscapeRight)
+        let projectionMatrix = camera.projectionMatrix(for: .landscapeRight,
+                                                       viewportSize: viewportSize,
+                                                       zNear: 0.01, zFar: 100)
+        let m = camera.transform
+        let cameraPos = SIMD3<Float>(m.columns.3.x, m.columns.3.y, m.columns.3.z)
+        // ARKit camera looks along -Z; depth values are meters along this axis.
+        let cameraForward = -simd_normalize(SIMD3<Float>(m.columns.2.x, m.columns.2.y, m.columns.2.z))
+        let viewToImage = frame.displayTransform(for: .landscapeRight,
+                                                 viewportSize: viewportSize).inverted()
+
+        let uniform = DepthOcclusionUniform(
+            inverseViewProjection: simd_inverse(projectionMatrix * viewMatrix),
+            cameraPos: cameraPos,
+            cameraForward: cameraForward,
+            planePoint: planePoint,
+            planeNormal: planeNormal,
+            viewToImage: SIMD4<Float>(Float(viewToImage.a), Float(viewToImage.b),
+                                      Float(viewToImage.c), Float(viewToImage.d)),
+            viewToImageT: SIMD2<Float>(Float(viewToImage.tx), Float(viewToImage.ty)),
+            drawableSize: .zero,   // the blitter fills this at draw time
+            enabled: 1,
+            // The scene must be at least this much nearer (meters) than the
+            // cup plane before the surface hides — absorbs plane-tracking
+            // noise so the rim/liquid never flicker, while a pouring pitcher
+            // (several cm above the rim) cleanly occludes.
+            margin: 0.01)
+        blitter.setSceneDepth(texture: texture, holder: cvTexture, uniform: uniform)
+        sceneDepthActive = true
     }
 
     // MARK: - Detection → geometry → source (main thread)
@@ -346,11 +452,30 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
                                offCup ? "Y" : "N",
                                rimDistanceForDebug.map { String(format: "%.3f", $0) } ?? "—")
 
-        // Occlusion disabled per request: the cup surface should stay fully
-        // visible at all times, including under the pitcher. `occluder(forTag:)`
-        // is left in place (unused) rather than deleted, in case this needs
-        // to come back later.
-        blitter.occluders = []
+        // Layering: the camera feed (real cup + pitcher) is the bottom layer
+        // and the sim surface paints over it, so without this the surface
+        // would always cover the pitcher. On LiDAR devices the clean per-pixel
+        // path (`updateSceneDepth`) handles this with the pitcher's true
+        // measured silhouette and these tag-circle holes are skipped; they
+        // remain only as the non-LiDAR fallback — a hole where a pitcher tag
+        // is depth-verified closer than the cup surface (see
+        // `occluder(forTag:)`).
+        //
+        // `FluidBlitter`/the shader only have 2 occlusion slots — with up to
+        // 3 pitcher tags (spout + 2 reference tags), cap defensively rather
+        // than relying on FluidBlitter silently dropping the rest.
+        var occluders: [Occluder] = []
+        if !sceneDepthActive, let cup {
+            let cameraPos = position(camera.transform)
+            let tagSize = Float(AprilTagRoles.pitcherTagSizeMeters)
+            for (_, transform) in pitcher {
+                if let occluder = Self.occluder(forTag: position(transform), tagSizeMeters: tagSize,
+                                                cameraPos: cameraPos, cup: cup) {
+                    occluders.append(occluder)
+                }
+            }
+        }
+        blitter.occluders = Array(occluders.prefix(2))
 
         // Drive Ken's source exactly as it expects: called every processed frame,
         // it handles occlusion/grace and emits the PourSample the controller cached.
@@ -387,6 +512,18 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
         if let cup, viewportSize.width > 1 {
             if let pose = cupPose(from: cup, camera: camera, viewport: viewportSize) {
                 blitter.cupPose = pose
+                // Hand the blitter the EXACT smoothed conjugate-diameter map
+                // (normalized like `pose.center`), not just the (axes, angle)
+                // eigen summary in `pose` — the summary is outline-only: it
+                // drops a rotation term for interior points, and its `angle`
+                // is noise-unstable near a circular projection, which made
+                // the rendered disc content visibly rotate during a pour.
+                // See `FluidBlitter.cupConjugates`.
+                if let sp = smoothedP, let sq = smoothedQ {
+                    let w = Float(viewportSize.width), h = Float(viewportSize.height)
+                    blitter.cupConjugates = (SIMD2<Float>(sp.x / w, sp.y / h),
+                                             SIMD2<Float>(sq.x / w, sq.y / h))
+                }
                 // `cupPose(from:)` just updated these as a side effect —
                 // guaranteed non-nil here since it only returns non-nil after
                 // successfully computing them.
@@ -446,7 +583,16 @@ final class CameraPourCoordinator: NSObject, ARSessionDelegate, ObservableObject
     /// size), scaled by `pitcherBodyToTagRatio` (the pitcher body is wider
     /// than just the tag glued to it) and converted into cup-UV units via the
     /// cup's own known radius — a measured quantity, not an arbitrary guess.
-    private static let pitcherBodyToTagRatio: Float = 3.0
+    ///
+    /// Sizing intent: the hole should HUG the pitcher's silhouette. Too big
+    /// and the cutout exposes raw camera feed AROUND the pitcher, which
+    /// reads as the surface color being erased near the pitcher instead of
+    /// the pitcher simply sitting on top of an intact surface. Since three
+    /// tag holes (spout + 2 body refs) union together to cover the body,
+    /// each individual hole can stay tight. Tune on device: raise if slivers
+    /// of surface paint over the pitcher's edges, lower if surface visibly
+    /// disappears around it.
+    private static let pitcherBodyToTagRatio: Float = 2.0
 
     private static func occluder(forTag tagPos: SIMD3<Float>, tagSizeMeters: Float,
                                   cameraPos: SIMD3<Float>, cup: CupGeometry) -> Occluder? {
@@ -576,8 +722,20 @@ struct ARCameraContainer: UIViewRepresentable {
         v.session.delegate = coordinator
         v.automaticallyUpdatesLighting = true
         if ARWorldTrackingConfiguration.isSupported {
-            v.session.run(ARWorldTrackingConfiguration())
+            let config = ARWorldTrackingConfiguration()
+            // Real per-pixel scene depth (LiDAR) drives the clean surface-
+            // under-pitcher occlusion — see CameraPourCoordinator.updateSceneDepth.
+            // Prefer the temporally smoothed variant (raw depth flickers at
+            // object edges); on non-LiDAR devices neither is supported and
+            // the tag-circle occlusion fallback takes over automatically.
+            if ARWorldTrackingConfiguration.supportsFrameSemantics(.smoothedSceneDepth) {
+                config.frameSemantics.insert(.smoothedSceneDepth)
+            } else if ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) {
+                config.frameSemantics.insert(.sceneDepth)
+            }
+            v.session.run(config)
         }
+        coordinator.arView = v               // for photo capture — see captureArtPhoto
         return v
     }
 
@@ -647,6 +805,7 @@ private struct CameraStatusHUD: View {
             Text(coordinator.cupDetected ? "Cup ● tracked" : "Cup ○ searching…")
             Text("Pitcher: \(coordinator.pitcherTagCount)/\(1 + AprilTagRoles.pitcherReferenceIDs.count) tags")
             Text("Disc drawing: \(coordinator.discDrawing ? "yes" : "no")")
+            Text("Occlusion: \(coordinator.sceneDepthActive ? "LiDAR per-pixel" : "tag circles (no LiDAR)")")
             Text(coordinator.debugLine)
                 .foregroundStyle(.yellow)
             if !coordinator.spoutOverCup {

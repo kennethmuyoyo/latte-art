@@ -16,7 +16,20 @@ struct LevelModel {
     // still moving visibly within one rep.
     var cupTargetMl: Float = 150
     var cupDepthMeters: Float = 0.06
-    private(set) var volumeMl: Float = 0
+
+    /// The practice flow skips the blend/base phase entirely ("go straight
+    /// into the art"), so every session starts with the cup already mostly
+    /// full of blended base. This isn't just pacing: with an empty cup the
+    /// surface sits `cupDepthMeters` below the rim, the resulting fall height
+    /// drives the Froude number up, and φ collapses — white physically can't
+    /// float, so a draw-first choreography could never form its pattern.
+    var baseFillFraction: Float = 0.7
+
+    private(set) var volumeMl: Float
+
+    init() {
+        volumeMl = baseFillFraction * cupTargetMl
+    }
 
     mutating func add(volumeMl: Float) {
         self.volumeMl += volumeMl
@@ -38,6 +51,6 @@ struct LevelModel {
     }
 
     mutating func reset() {
-        volumeMl = 0
+        volumeMl = baseFillFraction * cupTargetMl
     }
 }

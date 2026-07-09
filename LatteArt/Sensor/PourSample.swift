@@ -70,6 +70,17 @@ struct PourSample {
     /// reference; where the surface sits below it is Simulation's concern).
     var heightAboveRimMeters: Float? = nil
 
+    /// The stream's forward direction on the cup surface, unit vector in
+    /// `CupSpace` UV: the horizontal direction the pitcher is tipped toward,
+    /// measured as reference-tag → spout-tag projected into cup UV (the spout
+    /// leads the pitcher body, so milk lands angled this way and carries the
+    /// floating pattern forward even when the landing point holds still —
+    /// the "circle drifts ahead" phase of a heart). A raw geometric
+    /// measurement, per the contract; Simulation decides how much carry it
+    /// produces. `nil` when no reference tag is visible (direction
+    /// unmeasurable) or for touch/scripted sources.
+    var streamDirectionUV: SIMD2<Float>? = nil
+
     init(uv: SIMD2<Float>,
          velocity: SIMD2<Float> = .zero,
          flowRate: Float = 1,
@@ -77,6 +88,7 @@ struct PourSample {
          layingMilk: Bool? = nil,
          tiltRadians: Float? = nil,
          heightAboveRimMeters: Float? = nil,
+         streamDirectionUV: SIMD2<Float>? = nil,
          time: TimeInterval) {
         self.uv = uv
         self.velocity = velocity
@@ -85,6 +97,7 @@ struct PourSample {
         self.layingMilk = layingMilk
         self.tiltRadians = tiltRadians
         self.heightAboveRimMeters = heightAboveRimMeters
+        self.streamDirectionUV = streamDirectionUV
         self.time = time
     }
 }

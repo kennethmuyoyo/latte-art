@@ -38,17 +38,12 @@ struct CalibrationView: View {
 
                 Spacer()
 
-                VStack(spacing: 14) {
-                    Text(statusText)
-                        .appText(.headline)
-                        .foregroundStyle(ready ? Palette.correct : Palette.onCameraDim)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: 420)
-                    PillButton(title: "Next", prominent: ready, enabled: ready) {
-                        model.calibrationConfirmed()
-                    }
-                }
-                .padding(.bottom, 28)
+                Text(statusText)
+                    .appText(.headline)
+                    .foregroundStyle(ready ? Palette.correct : Palette.onCameraDim)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 420)
+                    .padding(.bottom, 28)
             }
             .frame(maxWidth: .infinity)
             .padding(.horizontal, Metrics.screenPadding)
@@ -57,10 +52,23 @@ struct CalibrationView: View {
             try? await Task.sleep(nanoseconds: 4_000_000_000)
             if !ready { showError = true }
         }
+        // No Next button: by the time alignment completes the user's hands
+        // are on the cup and pitcher, so there's nothing free to tap with.
+        // Advance automatically instead — but only after `ready` has HELD
+        // for a sustained beat, since tag detection flickers frame to frame
+        // and a one-frame blip shouldn't commit the transition. `task(id:)`
+        // cancels the pending hold the moment `ready` drops (Task.sleep
+        // throws on cancellation), so the timer restarts from zero on the
+        // next clean detection.
+        .task(id: ready) {
+            guard ready else { return }
+            do { try await Task.sleep(nanoseconds: 1_500_000_000) } catch { return }
+            model.calibrationConfirmed()
+        }
     }
 
     private var statusText: String {
-        if ready { return "Perfect! You're All Set!" }
+        if ready { return "Perfect! You're all set — here we go…" }
         if showError { return "We can't see your cup or pitcher's tags clearly. Try adjusting the lighting or camera angle." }
         return "Move your cup and pitcher until they fit inside the outlines."
     }
