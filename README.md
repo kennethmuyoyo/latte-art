@@ -105,6 +105,45 @@ By applying the geometric circumcircle formula to the (X,Y,Z) coordinates of the
 **The Dependency Trade-Off:** We consciously traded an "unreleased Beta OS dependency" for a "third-party C-library dependency" (the AprilRobotics C library wrapped into Swift). This is a strategic win: we depend on a mature, stable, open-source library that runs flawlessly on current, stable iOS versions rather than waiting on experimental frameworks that may break our app.
 
 
+## The Simulation: An Eulerian Fluid Solver in Swift + Metal
+
+The coffee surface is a real fluid simulation, not an animation. It is an **Eulerian** solver: the fluid is represented as fields (velocity, pressure, dye) sampled on a fixed grid of cells, and each frame updates those fields in place — as opposed to the Lagrangian approach of moving individual particles around. The whole thing runs in Swift and Metal compute shaders on the GPU.
+
+### The solver loop (per frame, on the GPU)
+
+Everything lives on 256×256 `rgba16Float` textures in ping-pong pairs (velocity, dye, pressure, divergence), stepped once per rendered frame in `FluidSimulation.step`:
+
+1. **Advect** — velocity is advected through itself, then dye through velocity, with *semi-Lagrangian* advection (`k_advect`): for each cell, trace backward along the velocity (`x₀ = x − Δt·v`) and bilinearly sample the field there. Unconditionally stable — the reason the sim survives frame hiccups.
+2. **Inject** — the milk stream stamps the grid (see below).
+3. **Project** — enforce incompressibility: compute the divergence of the velocity field (`k_divergence`), solve for pressure with Jacobi iteration (24 passes of `k_jacobi` — chosen over Gauss-Seidel because Jacobi is embarrassingly parallel on the GPU), then subtract the pressure gradient (`k_subtractGradient`). This is the step that makes fluid *behave like fluid*: pushing anywhere makes the whole basin redistribute.
+4. **Damp** — Rayleigh friction + wall no-slip (`k_dampVelocity`): velocity keeps 0.97 per frame, pinned to zero at the cup rim so a push never sloshes wall-to-wall.
+
+### The milk pour (the latte mechanics)
+
+The pour is **not** an additive paint splat. The stream is a disc whose interior dye is *set* to white, surrounded by a ring where velocity is *set* outright as a boundary condition (`k_milkStream`):
+
+- a **one-sided jet** on the stream's forward side (fixed toward the user, `(a/r)·latteV`) — the milk column turning at the surface and flowing out. This is what visibly *parts* the crema and makes the white circle bloom toward you while you hold the pour still;
+- a **transverse term** following the stream's own motion, edge-weighted (`v_perp·|t|/r·latteV`) — what makes a *moving* stream drag the pattern.
+
+The pressure projection then redistributes those set velocities through the whole cup — the "milk pushes the coffee aside" effect is the solver's response, nothing is painted outward. The heart emerges from exactly this: hold at the center (jet blooms the circle toward you), then one cut through the circle toward yourself — the jet pulls the cut's exit edge into the heart's point.
+
+`SimulationController` drives the stream from the real pour: tilt → flow (`PourPhysics`, a weir-flow curve plus a densimetric-Froude float-vs-sink gate), spout height above the tracked rim plane, and the low-pass-filtered landing point from the AprilTag sensor layer. Sessions start on a pre-filled base (`LevelModel.baseFillFraction`) — practice goes straight into drawing, and an empty cup would physically prevent white from floating at all.
+
+### Rendering
+
+`f_latte` maps the dye field to color: warm tan espresso (`RGB 193,122,61`) blended to white through a 2.8× contrast curve around 0.5 — the hard-ish transition is what makes edges read as crisp poured milk. Procedural fbm marbling texturizes the crema only; the milk stays flat. The disc is composited over the live camera feed, seated on the tracked cup via the exact conjugate-diameter map of the projected rim ellipse.
+
+### File map
+
+| File | Role |
+|---|---|
+| `LatteArt/Simulation/Fluid.metal` | All GPU kernels: advection, splat, divergence, Jacobi, gradient subtract, damping, the milk-stream stamp, and the latte surface shader |
+| `LatteArt/Simulation/FluidSimulation.swift` | Grid textures, ping-pong plumbing, the solver loop |
+| `LatteArt/Simulation/SimulationController.swift` | Real pour → stream injection; fill level; per-frame stats for coaching |
+| `LatteArt/Simulation/PourPhysics.swift` | Tilt→flow curve, impact velocity, Froude float/sink gate |
+| `LatteArt/Simulation/FluidBlitter.swift` | Renders the dye onto the cup quad over the camera; photo capture |
+
+
 ## App Track Addendum
 
 ### About the Frameworks
